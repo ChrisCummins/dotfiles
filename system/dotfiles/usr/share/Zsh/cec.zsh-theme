@@ -31,7 +31,8 @@ fi
 # in place of full paths for home directories. E.g. "~/", "~foo/".
 #
 __cec_zsh_theme_cwd() {
-    echo "$(tput bold)$(tput setaf 1)${PWD/$HOME/~}$(tput sgr0)"
+    local cwd="$(pwd | sed -e "s,^$HOME,~,;s,^/home/,~,;s,^/Users/,~,")"
+    echo "\e[1m$cwd%{$reset_color%}"
 }
 
 # Get the prompt prefix, e.g. "$", "#", "(dev) *$", etc.
@@ -39,24 +40,11 @@ __cec_zsh_theme_cwd() {
 __cec_zsh_theme_prefix() {
     local prefix=''
 
-    # Prefix promt with [GPU:$CUDA_VISIBLE_DEVICES], if set.
-    if [ ! -z ${CUDA_VISIBLE_DEVICES+x} ]; then
-        if [ -z "${CUDA_VISIBLE_DEVICES}" ]; then
-            prefix="[GPU:none] "
-        else
-            prefix="[GPU:$CUDA_VISIBLE_DEVICES] "
-        fi
-    fi
-
-    # Prefix prompt with ($ENV) environment variable, if set. This
+    # Prefix prompt with (<$ENV>) environment variable, if set. This
     # can be used be scripts which spawn subshells in order to
     # indicate a non-standard environment.
-    [ $ENV ] && { prefix="$prefix($(basename $ENV)) " }
-
-    # Prefix prompt with ($VIRTUAL_ENV) environment variable, if set. This
-    # is used for python development. See:
-    #   https://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/
-    [ $VIRTUAL_ENV ] && { prefix="$prefix($(basename $VIRTUAL_ENV)) " }
+    [ $ENV ] && { prefix="($(basename $ENV)) " }
+    [ $VIRTUAL_ENV ] && { prefix="($(basename $VIRTUAL_ENV)) " }
 
     # Set pound sign "#" or dollar sign "$" prefix character depending
     # on whether we're superuser or a normal user, respectively.
@@ -122,5 +110,5 @@ $(__cec_zsh_theme_prefix) '
 ZSH_THEME_GIT_PROMPT_PREFIX=" on %{$fg[white]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
 ZSH_THEME_GIT_PROMPT_DIRTY=" %{$fg[red]%}✘%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_UNTRACKED=" %{$fg[green]%}?"
+ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[green]%}?"
 ZSH_THEME_GIT_PROMPT_CLEAN=" %{$fg[green]%}✔"

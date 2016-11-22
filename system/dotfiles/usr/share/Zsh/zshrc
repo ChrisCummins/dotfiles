@@ -320,7 +320,12 @@ alias off='sudo shutdown -h now'
 alias diff='git diff --no-index'
 
 # Shortcuts.
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 alias c='clear'
+=======
+alias a='atom'
+alias c='cat'
+>>>>>>> 00e36321b... zsh: Add a->atom alias:zsh/zshrc
 alias E='exit'
 alias f='file'
 alias ff='find'

@@ -319,8 +319,12 @@ alias diff='git diff --no-index'
 alias c='clear'
 =======
 alias a='atom'
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 alias c='cat'
 >>>>>>> 00e36321b... zsh: Add a->atom alias:zsh/zshrc
+=======
+alias c='clear'
+>>>>>>> 4c9718e1d... zsh: Alias 'c' to 'clear':zsh/zshrc
 alias E='exit'
 alias f='file'
 alias ff='find'

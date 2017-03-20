@@ -334,8 +334,12 @@ alias m='make'
 alias M='mkdir'
 alias p='ipython'
 alias q='which'
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 # Since `q` alias conflicts with package of the same name.
 alias sql='/usr/bin/q'
+=======
+alias s='subl'
+>>>>>>> 70dd82aa9... zsh: Add 'ra' alias, remove 'R' alias:zsh/zshrc
 alias T='tail'
 alias t='timer'
 alias v='vim'
@@ -579,6 +583,7 @@ ra() {
     done
 }
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 
 # If sublime-text is available locally, command 's' opens sublime.
 # If not, command 's' opens rsub.
@@ -596,6 +601,8 @@ s() {
 }
 
 
+=======
+>>>>>>> 70dd82aa9... zsh: Add 'ra' alias, remove 'R' alias:zsh/zshrc
 # Buffer standard input to a file. Useful for redirecting output of a
 # pipe chain to the same input file. Example:
 #

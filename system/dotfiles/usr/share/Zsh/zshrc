@@ -211,9 +211,6 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # travis tab completion
 [ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
 
-# autoenv cd script. https://github.com/kennethreitz/autoenv
-which activate.sh &>/dev/null && source $(which activate.sh)
-
 # torch environment
 [ -f ~/torch/install/bin/torch-activate ] && source ~/torch/install/bin/torch-activate
 
@@ -680,6 +677,11 @@ fi
 
 # autoenv cd script. https://github.com/kennethreitz/autoenv
 which activate.sh &>/dev/null && source $(which activate.sh)
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
+=======
+
+setopt nullglob
+>>>>>>> 69beb048b... zsh: Fix autoenv source:zsh/zshrc
 
 setopt nullglob
 
@@ -696,6 +698,7 @@ if test -d ~/.zsh; then
     unset script
 fi
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 unsetopt nullglob
 
 
@@ -830,3 +833,6 @@ fi
 [ -f /home/cec/.travis/travis.sh ] && source /home/cec/.travis/travis.sh
 # Add autojump, if available. <https://github.com/wting/autojump>
 [ -f /usr/local/etc/profile.d/autojump.sh ] && . /usr/local/etc/profile.d/autojump.sh
+=======
+unsetopt nullglob
+>>>>>>> 69beb048b... zsh: Fix autoenv source:zsh/zshrc

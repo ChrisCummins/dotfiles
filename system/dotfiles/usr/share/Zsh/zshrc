@@ -319,6 +319,7 @@ alias diff='git diff --no-index'
 
 # Shortcuts.
 <<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 alias c='clear'
 =======
 alias a='atom'
@@ -326,6 +327,8 @@ alias a='atom'
 alias c='cat'
 >>>>>>> 00e36321b... zsh: Add a->atom alias:zsh/zshrc
 =======
+=======
+>>>>>>> ec8ad16fa... zsh: rm a couple of dud aliases:zsh/zshrc
 alias c='clear'
 >>>>>>> 4c9718e1d... zsh: Alias 'c' to 'clear':zsh/zshrc
 alias E='exit'

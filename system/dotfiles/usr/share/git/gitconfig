@@ -23,6 +23,7 @@
     required = true
     clean = git-lfs clean -- %f
     smudge = git-lfs smudge -- %f
+<<<<<<< HEAD:system/dotfiles/usr/share/git/gitconfig
 [diff "jupyternotebook"]
 	command = git-nbdiffdriver diff
 [merge "jupyternotebook"]
@@ -34,3 +35,5 @@
 	prompt = false
 [mergetool "nbdime"]
 	cmd = git-nbmergetool merge \"$BASE\" \"$LOCAL\" \"$REMOTE\" \"$MERGED\"
+=======
+>>>>>>> ba7dd5762... git: s/\t/    /:git/gitconfig

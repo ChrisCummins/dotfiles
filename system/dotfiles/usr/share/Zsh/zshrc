@@ -371,6 +371,10 @@ alias ls_alias="alias | sed 's/=/\t/' | sed -r 's/'"'"(.*)"'"'/\1/' | column -t 
 # Open an emacs terminal to magit in the current directory
 alias magit="emacs -nw --eval '(progn (magit-status) (delete-other-windows))'"
 alias mg=magit
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
+=======
+
+>>>>>>> 1aad71d2c... Add 'magit' alias:usr/share/Zsh/zshrc
 
 # Go away "rails generate".
 unalias rg

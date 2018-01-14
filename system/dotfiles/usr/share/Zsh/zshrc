@@ -32,8 +32,11 @@ export REPORTTIME=30
 
 export LOGCHECK=60
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 export LMK_TO="chrisc.101@gmail.com"
 
+=======
+>>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 autoload zsh/sched
 
 # Renaming with globbing
@@ -168,6 +171,7 @@ zstyle ':completion:*' cache-path /usr/share/zsh/cache
 export ZSH=~/.oh-my-zsh
 source ~/.oh-my-zsh/oh-my-zsh.sh
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 <<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 =======
 # --------------------------------------------------------------------------
@@ -310,6 +314,8 @@ export MANPATH=$(build_path "${manpath_dirs[@]}")
 
 unsetopt nullglob
 >>>>>>> 3dc54d6e6... zsh: use a private/ directory:zsh/zshrc
+=======
+>>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 
 # --------------------------------------------------------------------------
 # Aliases.
@@ -320,9 +326,12 @@ alias exit='disown &>/dev/null; exit'
 
 alias off='sudo shutdown -h now'
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 # Use diff-so-fancy by default
 alias diff='git diff --no-index'
 
+=======
+>>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 # Shortcuts.
 <<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 <<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
@@ -379,10 +388,13 @@ alias mg=magit
 
 >>>>>>> 1aad71d2c... Add 'magit' alias:usr/share/Zsh/zshrc
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 # Go away "rails generate".
 unalias rg
 
 
+=======
+>>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 # --------------------------------------------------------------------------
 # Shell functions.
 # --------------------------------------------------------------------------
@@ -705,8 +717,11 @@ which activate.sh &>/dev/null && source $(which activate.sh)
 setopt nullglob
 >>>>>>> 69beb048b... zsh: Fix autoenv source:zsh/zshrc
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 setopt nullglob
 
+=======
+>>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 # Custom zsh scripts
 if test -d ~/.zsh; then
     for script in ~/.zsh/*.zsh; do

@@ -252,10 +252,16 @@ class Homebrew(Task):
     home = cls._home()
     return '{home}/bin/{name}'.format(**vars())
 
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
   @classmethod
   def lib(cls, name):
     home = cls._home()
     return '{home}/lib/{name}'.format(**vars())
+=======
+class Python(Task):
+  """ python 2 & 3 """
+  PIP_LIST = ".pip-freeze.json"
+>>>>>>> 0b226cbf1... Homebrew python packages have updated.:dotfiles.py
 
 
 class Python(Task):
@@ -284,8 +290,16 @@ class Python(Task):
     if Homebrew().install_package("python@2"):
       Homebrew.brew_command("link python@2 --force")
 
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
     if Homebrew().install_package("python"):
       Homebrew.brew_command("link python --force")
+=======
+    if Homebrew().install_package("python@2"):
+      shell("{brew} link python@2 --force".format(**vars()))
+
+    if Homebrew().install_package("python"):
+      shell("{brew} link python --force".format(**vars()))
+>>>>>>> 0b226cbf1... Homebrew python packages have updated.:dotfiles.py
 
     # install pip
     self._install_pip_version(self.PYTHON2_BINARY, self.__versions__["pip"])

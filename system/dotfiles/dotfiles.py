@@ -1936,8 +1936,13 @@ class PhdBuildDeps(Task):
 class Phd(Task):
   """PhD repo"""
   __platforms__ = ['linux', 'osx']
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
   __genfiles__ = ['~/phd/.env']
   __deps__ = ['PhdBuildDeps']
+=======
+  __genfiles__ = ['~/phd']
+  __deps__ = ['Bazel']
+>>>>>>> fc2db958f... Add Bazel dep to PhD repo.:dotfiles.py
 
   def install(self):
     clone_git_repo(github_repo("ChrisCummins", "phd"), "~/phd")

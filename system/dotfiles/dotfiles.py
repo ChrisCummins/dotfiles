@@ -2115,6 +2115,7 @@ class Ripgrep(Task):
     Homebrew().install_package("ripgrep")
 
 
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
 class Tower(Task):
   __platforms__ = ['osx']
   __osx_deps__ = ['Homebrew']
@@ -2124,6 +2125,8 @@ class Tower(Task):
     Homebrew().install_cask('tower')
 
 
+=======
+>>>>>>> 427a171ee... Install dnstest script.:dotfiles.py
 class DnsTest(Task):
   """dns performance test"""
   __platforms__ = ['osx', 'linux']
@@ -2140,6 +2143,7 @@ class DnsTest(Task):
       mkdir("~/.local/bin")
       shell("wget '{url}' -O ~/.local/bin/dnstest".format(url=url))
       shell('chmod +x ~/.local/bin/dnstest')
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
 
 
 class PlatformIO(Task):
@@ -2234,3 +2238,5 @@ class DbBrowser(Task):
 
   def install(self):
     Homebrew().install_cask("db-browser-for-sqlite")
+=======
+>>>>>>> 427a171ee... Install dnstest script.:dotfiles.py

@@ -529,6 +529,7 @@ for_the_love_of_god() {
     done
 }
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 # A command which is intended to be shoved onto the tail end of some
 # long-running task to email me when done, e.g.
 #     $ ./some_big_task ; here
@@ -560,6 +561,8 @@ if [[ -d /usr/local/cuda ]]; then
     export CUDA_VISIBLE_DEVICES=
 fi
 
+=======
+>>>>>>> f32f856ae... Add a 'for_the_love_of_god' loop.:usr/share/Zsh/zshrc
 # List file and directory contents.
 unalias l
 l() {

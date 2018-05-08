@@ -839,11 +839,14 @@ manpath_dirs=( \
 )
 export MANPATH=$(build_path "${manpath_dirs[@]}")
 
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 infopath_dirs=( \
     /home/linuxbrew/.linuxbrew/share/info \
 )
 export INFOPATH=$(build_path "${infopath_dirs[@]}")
 
+=======
+>>>>>>> 522378133... Fix ZSH coloring.:usr/share/Zsh/zshrc
 
 # Enable pretty colors.
 # This must be done after setting PATH so that on macOS the gnubin directory
@@ -858,6 +861,7 @@ if $(which dircolors &>/dev/null); then
     alias fgrep='fgrep --color=auto'
     alias grep='grep --color=auto'
     alias vdir='vdir --color=auto'
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 =======
 
     for script in ~/.zsh/private/*.zsh; do
@@ -877,3 +881,6 @@ unsetopt nullglob
 =======
 unsetopt nullglob
 >>>>>>> f7900dd25... Use sublime for EDITOR:zsh/zshrc
+=======
+fi
+>>>>>>> 522378133... Fix ZSH coloring.:usr/share/Zsh/zshrc

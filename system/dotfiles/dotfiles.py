@@ -1439,10 +1439,14 @@ class Graphviz(Task):
   """ graph visualization software """
   __platforms__ = ['osx', 'linux']
 <<<<<<< HEAD:system/dotfiles/dotfiles.py
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
   __deps__ = ['Homebrew']
 =======
   __deps__ ['Homebrew']
 >>>>>>> 848569a8c... Install Graphviz.:dotfiles.py
+=======
+  __deps__ = ['Homebrew']
+>>>>>>> f6d6b588d... Fix syntax error.:dotfiles.py
 
   def install(self):
     Homebrew().install_package('graphviz')

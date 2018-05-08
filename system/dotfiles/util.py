@@ -342,10 +342,14 @@ def copy_file(src, dst):
     shutil.copyfile(src, dst)
 
 
+<<<<<<< HEAD:system/dotfiles/util.py
 def clone_git_repo(url,
                    destination,
                    version=None,
                    shallow=False,
+=======
+def clone_git_repo(url, destination, version=None, shallow=False,
+>>>>>>> 457b24180... Add shallow and recursive options to git clone.:util.py
                    recursive=True):
   """ clone a git repo, returns True if cloned """
   # Cannot set the version of a shallow clone.

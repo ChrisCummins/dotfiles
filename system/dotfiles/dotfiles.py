@@ -1438,7 +1438,11 @@ class Emacs(Task):
 class Graphviz(Task):
   """ graph visualization software """
   __platforms__ = ['osx', 'linux']
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
   __deps__ = ['Homebrew']
+=======
+  __deps__ ['Homebrew']
+>>>>>>> 848569a8c... Install Graphviz.:dotfiles.py
 
   def install(self):
     Homebrew().install_package('graphviz')

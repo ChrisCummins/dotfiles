@@ -590,9 +590,13 @@ search() {
 serve() {
     local port=${1:=3000}
 <<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
+<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
     echo "Serving directory contents on http://localhost:$port/"
 =======
 >>>>>>> d544c808d... zsh: Update server() to serve():zsh/zshrc
+=======
+    echo "Serving directory contents on http://localhost:$port/"
+>>>>>>> 69e9cc5f2... Add a clarifying echo.:usr/share/Zsh/zshrc
     python2 -m SimpleHTTPServer $port
 }
 

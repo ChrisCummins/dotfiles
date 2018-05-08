@@ -713,6 +713,7 @@ class ZshBazelCompletion(Task):
 
   def install(self):
 <<<<<<< HEAD:system/dotfiles/dotfiles.py
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
     url = ('https://raw.githubusercontent.com/bazelbuild/bazel/{}/'
            'scripts/zsh_completion/_bazel').format(
                self.__versions__['bazel_completion'])
@@ -722,11 +723,20 @@ class ZshBazelCompletion(Task):
     # file we need:
     # https://raw.githubusercontent.com/bazelbuild/bazel/bffa2db380cb3ca2fd9262ac5a45d02518376e03/scripts/zsh_completion/_bazel
 >>>>>>> db63ce893... Add a note to improve bazel autocomplete.:dotfiles.py
+=======
+    url = ('https://raw.githubusercontent.com/bazelbuild/bazel/{}/'
+           'scripts/zsh_completion/_bazel').format(
+              self.__versions__['bazel_completion'])
+>>>>>>> e0bfca9ee... Download only the one bazel file needed.:dotfiles.py
     bazel = os.path.expanduser("~/.bazel_tmp")
     shell("rm -rf {bazel}".format(**vars()))
 
     if not os.path.isfile(os.path.expanduser("~/.zsh/completion/_bazel")):
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
       # FIXME: shell("fpath[1,0]=~/.zsh/completion/")
+=======
+      shell("fpath[1,0]=~/.zsh/completion/")
+>>>>>>> e0bfca9ee... Download only the one bazel file needed.:dotfiles.py
       mkdir("~/.zsh/completion/")
       shell("wget {url} -O ~/.zsh/completion/_bazel".format(**vars()))
 

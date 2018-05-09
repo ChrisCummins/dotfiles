@@ -1857,6 +1857,7 @@ class FlorenceScripts(Task):
     Trash().trash(*self.__genfiles__)
 
 
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
 class LibExempi(Task):
   """ parse XMP metadata """
   __platforms__ = ['osx', 'linux']
@@ -1876,6 +1877,32 @@ class LibMySQL(Task):
 
   def install_linux(self):
     Apt().install_package('libmysqlclient-dev')
+=======
+class FlorenceScripts(Task):
+  """Scripts just for florence."""
+  __platforms__ = ['osx']
+  __hosts__ = ['florence']
+  __deps__ = ["Scripts"]
+  __genfiles__ = [
+      "~/.local/bin/orange_you_glad_you_backup",
+      "~/.local/bin/ryan_gosling_give_me_photos",
+      "~/.local/bin/ryan_gosling_have_my_movies",
+      "~/.local/bin/ryan_gosling_have_my_music",
+      "~/.local/bin/ryan_gosling_have_my_photos",
+  ]
+
+  def install(self):
+    symlink(usr_share("scripts/orange_you_glad_you_backup.sh"),
+            "~/.local/bin/orange_you_glad_you_backup")
+    symlink(usr_share("scripts/ryan_gosling_give_me_photos.sh"),
+            "~/.local/bin/ryan_gosling_give_me_photos")
+    symlink(usr_share("scripts/ryan_gosling_have_my_photos.sh"),
+            "~/.local/bin/ryan_gosling_have_my_photos")
+    symlink(usr_share("scripts/ryan_gosling_have_my_movies.sh"),
+            "~/.local/bin/ryan_gosling_have_my_movies")
+    symlink(usr_share("scripts/ryan_gosling_have_my_music.sh"),
+            "~/.local/bin/ryan_gosling_have_my_music")
+>>>>>>> 49230460b... Pull photo library from ryangosling.:dotfiles.py
 
 
 class Clang(Task):

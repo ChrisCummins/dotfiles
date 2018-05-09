@@ -1844,7 +1844,13 @@ class FlorenceScripts(Task):
   __hosts__ = ['florence']
   __deps__ = ["Scripts"]
   __genfiles__ = [
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
       "~/.local/bin/orange_you_glad_you_backup",
+=======
+      "~/.local/bin/orange",
+      "~/.local/bin/ryan_gosling_give_me_photos",
+      "~/.local/bin/ryan_gosling_have_my_photos",
+>>>>>>> 77189bb07... Install photolib scripts on diana.:dotfiles.py
   ]
 
   def install(self):

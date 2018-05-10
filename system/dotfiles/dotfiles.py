@@ -1841,6 +1841,7 @@ class Scripts(Task):
 class FlorenceScripts(Task):
   """Scripts just for florence."""
   __platforms__ = ['osx']
+<<<<<<< HEAD:system/dotfiles/dotfiles.py
   __hosts__ = ['florence']
   __deps__ = ["Scripts"]
   __genfiles__ = [
@@ -1857,9 +1858,23 @@ class FlorenceScripts(Task):
     symlink(
         usr_share("scripts/orange_you_glad_you_backup.sh"),
         "~/.local/bin/orange_you_glad_you_backup")
+=======
+  __hosts__ = ['diana']
+  __deps__ = ['Scripts']
+  __genfiles__ = [
+      '~/.local/bin/ryan_gosling_give_me_photos',
+      '~/.local/bin/ryan_gosling_have_my_photos',
+  ]
+
+  def install(self):
+    symlink(usr_share("scripts/ryan_gosling_give_me_photos.sh"),
+            "~/.local/bin/ryan_gosling_give_me_photos")
+    symlink(usr_share("scripts/ryan_gosling_have_my_photos.sh"),
+            "~/.local/bin/ryan_gosling_have_my_photos")
+>>>>>>> 57fc22152... Update diana scripts.:dotfiles.py
 
   def uninstall(self):
-    task_print("Removing florence scripts")
+    task_print("Removing diana scripts")
     Trash().trash(*self.__genfiles__)
 
 

@@ -32,7 +32,7 @@ class Apt(object):
 
   def install_package(self, package):
     """ install a package using apt-get, return True if installed """
-    if not shell_ok("/usr/bin/dpkg -s '{package}'".format(**vars())):
+    if not shell_ok("dpkg -s '{package}' &>/dev/null".format(**vars())):
       shell("sudo apt-get install -y '{package}'".format(**vars()))
       return True
 
@@ -41,31 +41,13 @@ class Apt(object):
     shell("sudo apt-get update")
 
 
-class Sudo(Task):
-  __platforms__ = ['linux']
-  __deps__ = []
-  __genfiles__ = ['/usr/bin/sudo']
-
-  def install_linux(self):
-    Apt().install_package('sudo')
-
-
-class BuildEssential(Task):
-  __platforms__ = ['linux']
-  __deps__ = []
-  __genfiles__ = ['/usr/bin/gcc']
-
-  def install_linux(self):
-    Apt().install_package('build-essential')
-
-
 class Homebrew(Task):
   """ homebrew package manager """
   # Temporary files for caching list of installed packages and casks
-  PKG_LIST = "/tmp/dotfiles_brew_package_list.txt"
-  CASK_LIST = "/tmp/dotfiles_brew_cask_list.txt"
-  OUTDATED_PKG_LIST = "/tmp/dotfiles_brew_outdated_packages.txt"
-  OUTDATED_CASK_LIST = "/tmp/dotfiles_brew_outdated_casks.txt"
+  PKG_LIST = os.path.abspath(".brew-pkgs.txt")
+  CASK_LIST = os.path.abspath(".brew-casks.txt")
+  OUTDATED_PKG_LIST = os.path.abspath(".brew-pkgs-outdated.txt")
+  OUTDATED_CASK_LIST = os.path.abspath(".brew-casks-outdated.txt")
 
   BREW_BINARY = {
       'osx': '/usr/local/bin/brew',
@@ -74,7 +56,6 @@ class Homebrew(Task):
 
   __platforms__ = ['linux', 'osx']
   __deps__ = []
-  __ubuntu_deps__ = ['Sudo', 'BuildEssential']
   __genfiles__ = [BREW_BINARY]
   __tmpfiles__ = [PKG_LIST, CASK_LIST, OUTDATED_PKG_LIST, OUTDATED_CASK_LIST]
 
@@ -87,85 +68,30 @@ class Homebrew(Task):
 
   def install_ubuntu(self):
     # Install build dependencies:
+    Apt().install_package("build-essential")
     Apt().install_package("curl")
     Apt().install_package("file")
     Apt().install_package("git")
     Apt().install_package("python-setuptools")
 
-    # On Ubuntu we create a special 'linuxbrew' user to own the linuxbrew
-    # installation. This is because Homebrew does not support use by root user,
-    # and on linux we can't guarantee that a user account exists, such as
-    # in Docker containers.
-    if not shell_ok('id -u linuxbrew'):
-      shell('sudo useradd -m linuxbrew')
-
     if not os.path.exists('/home/linuxbrew/.linuxbrew/bin/brew'):
       url = ("https://raw.githubusercontent.com/"
              "Linuxbrew/install/master/install.sh")
-      self.shell('yes | sh -c "$(curl -fsSL {url})"'.format(url=url))
-      try:
-        self.shell('{brew} doctor'.format(brew=self.BREW_BINARY))
-      except CalledProcessError:
-        # We don't care about errors at this stage.
-        pass
-      self._make_user_writeable()
-
-  def _make_user_writeable(self):
-    """Hacky workaround for non-user owned homebrew installations.
-
-    Ensures that the directories (but not specific files) are writeable by
-    all users on linux. This is so that programs which create files (such as
-    python's pip) can write to their installation directories.
-    """
-    if PLATFORM in LINUX_DISTROS:
-      shell(
-          'find /home/linuxbrew/.linuxbrew/ -type d | xargs -L 500 sudo chmod 777'
-      )
-
-  @staticmethod
-  def _as_linuxbrew_user(cmd):
-    """Run a command as the 'linuxbrew' user."""
-    return "sudo -H -u linuxbrew bash -c '{cmd}'".format(cmd=cmd)
-
-  @classmethod
-  def shell(cls, cmd):
-    """Portability wrapper for the shell() command.
-
-    On Linux, the command is executed as the linuxbrew user.
-    """
-    if PLATFORM in LINUX_DISTROS:
-      return shell(cls._as_linuxbrew_user(cmd))
-    else:
-      return shell(cmd)
-
-  @classmethod
-  def shell_ok(cls, cmd):
-    """Portability wrapper for the shell() command.
-
-    On Linux, the command is executed as the linuxbrew user.
-    """
-    if PLATFORM in LINUX_DISTROS:
-      return shell_ok(cls._as_linuxbrew_user(cmd))
-    else:
-      return shell_ok(cmd)
-
-  @classmethod
-  def brew_command(cls, cmd):
-    cls.shell(" ".join([cls.BREW_BINARY, cmd]))
+      shell('yes | sh -c "$(curl -fsSL {url})"'.format(**vars()))
+      shell('{brew} update'.format(brew=self.BREW_BINARY))
 
   def package_is_installed(self, package):
     """ return True if package is installed """
     if not os.path.isfile(self.PKG_LIST):
-      self.shell("{self.BREW_BINARY} list > {self.PKG_LIST}".format(**vars()))
+      shell("{self.BREW_BINARY} list > {self.PKG_LIST}".format(**vars()))
 
-    return self.shell_ok("grep '^{package}$' <{self.PKG_LIST}".format(**vars()))
+    return shell_ok("grep '^{package}$' <{self.PKG_LIST}".format(**vars()))
 
-  def install_package(self, package, *opts):
+  def install_package(self, package):
     """ install a package using homebrew, return True if installed """
     if not self.package_is_installed(package):
-      task_print("brew install " + package + ' ' + ' '.join(opts))
-      self.shell("{self.BREW_BINARY} install {package}".format(**vars()))
-      self._make_user_writeable()
+      task_print("brew install " + package)
+      shell("{self.BREW_BINARY} install {package}".format(**vars()))
       return True
 
   def package_is_outdated(self, package):
@@ -175,69 +101,60 @@ class Homebrew(Task):
                              "as it is not installed".format(**vars()))
 
     if not os.path.isfile(self.OUTDATED_PKG_LIST):
-      self.shell(
-          "{self.BREW_BINARY} outdated | awk '{{print $1}}' >{self.OUTDATED_PKG_LIST}"
-          .format(**vars()))
+      shell("{self.BREW_BINARY} outdated | awk '{{print $1}}' >{self.OUTDATED_PKG_LIST}"
+            .format(**vars()))
 
     package_stump = package.split('/')[-1]
-    return self.shell_ok(
-        "grep '^{package_stump}$' <{self.OUTDATED_PKG_LIST}".format(**vars()))
+    return shell_ok("grep '^{package_stump}$' <{self.OUTDATED_PKG_LIST}".format(**vars()))
 
   def upgrade_package(self, package):
     """ upgrade package, return True if upgraded """
     if self.package_is_outdated(package):
       task_print("brew upgrade {package}".format(**vars()))
-      self.shell("{self.BREW_BINARY} upgrade {package}".format(**vars()))
-      self._make_user_writeable()
+      shell("{self.BREW_BINARY} upgrade {package}".format(**vars()))
       return True
 
   def cask_is_installed(self, cask):
     """ return True if cask is installed """
     if not os.path.isfile(self.CASK_LIST):
-      self.shell(
-          "{self.BREW_BINARY} cask list > {self.CASK_LIST}".format(**vars()))
+      shell("{self.BREW_BINARY} cask list > {self.CASK_LIST}".format(**vars()))
 
     cask_stump = cask.split('/')[-1]
-    return self.shell_ok(
-        "grep '^{cask_stump}$' <{self.CASK_LIST}".format(**vars()))
+    return shell_ok("grep '^{cask_stump}$' <{self.CASK_LIST}".format(**vars()))
 
   def install_cask(self, cask):
     """ install a homebrew cask, return True if installed """
     if not self.cask_is_installed(cask):
       task_print("brew cask install " + cask)
-      self.shell("{self.BREW_BINARY} cask install {cask}".format(**vars()))
-      self._make_user_writeable()
+      shell("{self.BREW_BINARY} cask install {cask}".format(**vars()))
       return True
 
   def cask_is_outdated(self, cask):
     """ returns True if cask is outdated """
     if not self.cask_is_installed(cask):
       raise InvalidTaskError(
-          "homebrew cask '{package}' cannot be upgraded as it is not installed".
-          format(**vars()))
+          "homebrew cask '{package}' cannot be upgraded as it is not installed"
+          .format(**vars()))
 
     if not os.path.isfile(self.OUTDATED_CASK_LIST):
-      self.shell("{self.BREW_BINARY} cask outdated ".format(**vars()) +
-                 "| awk '{{print $1}}' >{self.OUTDATED_CASK_LIST}".format(
-                     **vars()))
+      shell("{self.BREW_BINARY} cask outdated ".format(**vars()) +
+            "| awk '{{print $1}}' >{self.OUTDATED_CASK_LIST}".format(**vars()))
 
     cask_stump = cask.split('/')[-1]
-    return self.shell_ok(
-        "grep '^{cask_stump}$' <{self.OUTDATED_CASK_LIST}".format(**vars()))
+    return shell_ok("grep '^{cask_stump}$' <{self.OUTDATED_CASK_LIST}".format(**vars()))
 
   def upgrade_cask(self, cask):
     """ upgrade a homebrew cask. does nothing if cask not installed """
     if self.cask_is_outdated(cask):
       task_print("brew cask upgrade {cask}".format(**vars()))
-      self.shell("{self.BREW_BINARY} cask upgrade {cask}".format(**vars()))
-      self._make_user_writeable()
+      shell("{self.BREW_BINARY} cask upgrade {cask}".format(**vars()))
       return True
 
   def uninstall_cask(self, cask):
     """ remove a homebrew cask, return True if uninstalled """
     if self.cask_is_installed(cask):
       task_print("brew cask remove " + cask)
-      self.shell("{self.BREW_BINARY} cask remove " + cask)
+      shell("{self.BREW_BINARY} cask remove " + cask)
       return True
 
   @staticmethod
@@ -252,81 +169,69 @@ class Homebrew(Task):
     home = cls._home()
     return '{home}/bin/{name}'.format(**vars())
 
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
+
   @classmethod
   def lib(cls, name):
     home = cls._home()
     return '{home}/lib/{name}'.format(**vars())
-=======
+
+
 class Python(Task):
   """ python 2 & 3 """
   PIP_LIST = ".pip-freeze.json"
->>>>>>> 0b226cbf1... Homebrew python packages have updated.:dotfiles.py
 
-
-class Python(Task):
-  """ python 2 & 3 """
-  PIP_LIST = "/tmp/dotfiles_pip_freeze.json"
-  PYTHON2_BINARY = ('/usr/local/opt/python@2/bin/python2'
-                    if PLATFORM == 'osx' else Homebrew.bin('python2'))
-  PYTHON3_BINARY = ('/usr/local/opt/python@3/bin/python3'
-                    if PLATFORM == 'osx' else Homebrew.bin('python3'))
+  PIP2_BINARY = Homebrew.bin('pip2')
+  PIP3_BINARY = Homebrew.bin('pip3')
+  PYTHON2_BINARY = Homebrew.bin('python2')
+  PYTHON3_BINARY = Homebrew.bin('python3')
 
   __platforms__ = ['linux', 'osx']
   __deps__ = ['Homebrew']
   __genfiles__ = []
   __genfiles__ = [
+      PIP2_BINARY,
+      PIP3_BINARY,
       PYTHON2_BINARY,
       PYTHON3_BINARY,
       Homebrew.bin('virtualenv'),
   ]
   __tmpfiles__ = [PIP_LIST]
   __versions__ = {
-      "pip": "10.0.1",
+      "pip": "9.0.1",
       "virtualenv": "15.1.0",
   }
 
   def install(self):
-    if Homebrew().install_package("python@2"):
-      Homebrew.brew_command("link python@2 --force")
+    brew = Homebrew.BREW_BINARY
 
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-    if Homebrew().install_package("python"):
-      Homebrew.brew_command("link python --force")
-=======
     if Homebrew().install_package("python@2"):
       shell("{brew} link python@2 --force".format(**vars()))
 
     if Homebrew().install_package("python"):
       shell("{brew} link python --force".format(**vars()))
->>>>>>> 0b226cbf1... Homebrew python packages have updated.:dotfiles.py
 
     # install pip
-    self._install_pip_version(self.PYTHON2_BINARY, self.__versions__["pip"])
-    self._install_pip_version(self.PYTHON3_BINARY, self.__versions__["pip"])
+    self._install_pip_version(self.PIP2_BINARY, self.__versions__["pip"])
+    self._install_pip_version(self.PIP3_BINARY, self.__versions__["pip"])
 
     # install virtualenv
     self.pip_install("virtualenv", self.__versions__["virtualenv"])
 
-    # Symlink my preferred python into ~/.local/bin.
-    shell('mkdir -p ~/.local/bin')
-    symlink(self.PYTHON3_BINARY, "~/.local/bin/python")
-
-  def _install_pip_version(self, python, version):
-    if not shell_ok(
-        "test $({python} -m pip --version | awk '{{print $2}}') = {version}".
-        format(**vars())):
-      task_print(
-          "{python} -m pip install --upgrade 'pip=={version}'".format(**vars()))
-      Homebrew.shell(
-          '{python} -m pip install --upgrade "pip=={version}"'.format(**vars()))
+  def _install_pip_version(self, pip, version):
+    if not shell_ok("test $({pip} --version | awk '{{print $2}}') = {version}".format(**vars())):
+      basename = os.path.basename(pip)
+      task_print("{basename} install --upgrade 'pip=={version}'".format(**vars()))
+      shell("{pip} install --upgrade 'pip=={version}'".format(**vars()))
 
   def upgrade(self):
     Homebrew().upgrade_package("python")
     Homebrew().upgrade_package("python3")
 
-  def pip_install(self, package, version, python=PYTHON3_BINARY, sudo=False):
+  def pip_install(self, package, version, pip=PIP2_BINARY, sudo=False):
     """ install a package using pip, return True if installed """
+    # Ubuntu requires sudo permission for pip install
+    use_sudo = "sudo -H " if sudo else ""
+
     # Create the list of pip packages
     if os.path.exists(self.PIP_LIST):
       with open(self.PIP_LIST) as infile:
@@ -334,19 +239,16 @@ class Python(Task):
     else:
       data = {}
 
-    if python not in data:
-      freeze = Homebrew.shell(
-          "{python} -m pip freeze 2>/dev/null".format(**vars()))
-      data[python] = freeze.strip().split("\n")
+    if pip not in data:
+      freeze = shell("{use_sudo} {pip} freeze 2>/dev/null".format(**vars()))
+      data[pip] = freeze.strip().split("\n")
       with open(self.PIP_LIST, "w") as outfile:
         json.dump(data, outfile)
 
     pkg_str = package + '==' + version
-    if pkg_str not in data[python]:
-      task_print(
-          "{python} -m pip install {package}=={version}".format(**vars()))
-      Homebrew.shell(
-          "{python} -m pip install {package}=={version}".format(**vars()))
+    if pkg_str not in data[pip]:
+      task_print("pip install {package}=={version}".format(**vars()))
+      shell("{use_sudo} {pip} install {package}=={version}".format(**vars()))
       return True
 
 
@@ -360,24 +262,8 @@ class PypiConfig(Task):
   __genfiles__ = [PYP_IRC]
 
   def install(self):
-    symlink("{private}/python/.pypirc".format(private=PRIVATE), "~/.pypirc")
-
-
-class Docker(Task):
-  __platforms__ = ['osx', 'linux']
-  __deps__ = ['Homebrew']
-
-  def install_osx(self):
-    Homebrew().install_cask('docker')
-
-  def install_ubuntu(self):
-    Apt().install_package('docker.io')
-    shell('sudo systemctl start docker')
-    shell('sudo systemctl enable docker')
-    shell('sudo usermod -aG docker $USER')
-
-  def uninstall(self):
-    Homebrew().uninstall_cask('docker')
+    symlink("{private}/python/.pypirc".format(private=PRIVATE),
+            "~/.pypirc")
 
 
 class Unzip(Task):
@@ -400,13 +286,15 @@ class Ruby(Task):
   __platforms__ = ['osx']
   __osx_deps__ = ['Homebrew']
   __genfiles__ = ['~/.rbenv']
-  __versions__ = {"ruby": "2.4.1"}
+  __versions__ = {
+      "ruby": "2.4.1"
+  }
 
   def install_osx(self):
     Homebrew().install_package("rbenv")
 
     # initialize rbenv if required
-    if shell_ok("which rbenv"):
+    if shell_ok("which rbenv &>/dev/null"):
       shell('eval "$(rbenv init -)"')
 
     # install ruby and set as global version
@@ -457,9 +345,8 @@ class DropboxScripts(Task):
   __genfiles__ = ["~/.local/bin/dropbox-find-conflicts"]
 
   def install(self):
-    symlink(
-        usr_share("Dropbox/dropbox-find-conflicts.sh"),
-        "~/.local/bin/dropbox-find-conflicts")
+    symlink(usr_share("Dropbox/dropbox-find-conflicts.sh"),
+            "~/.local/bin/dropbox-find-conflicts")
 
 
 class Dropbox(Task):
@@ -484,11 +371,10 @@ class Dropbox(Task):
     self._install_common()
 
   def install_linux(self):
-    if (not os.path.exists(os.path.expanduser("~/.dropbox-dist/dropboxd")) and
-        not IS_TRAVIS_CI):  # skip on Travis CI:
+    if (not os.path.exists(os.path.expanduser("~/.dropbox-dist/dropboxd"))
+        and not IS_TRAVIS_CI):  # skip on Travis CI:
       task_print("Installing Dropbox")
-      shell(
-          'cd - && wget -O - "{self.UBUNTU_URL}" | tar xzf -'.format(**vars()))
+      shell('cd - && wget -O - "{self.UBUNTU_URL}" | tar xzf -'.format(**vars()))
       self.installed_on_ubuntu = True
     self._install_common()
 
@@ -498,8 +384,7 @@ class Dropbox(Task):
   def teardown(self):
     if self.installed_on_ubuntu:
       logging.info("")
-      logging.info(
-          "NOTE: manual step required to complete dropbox installation:")
+      logging.info("NOTE: manual step required to complete dropbox installation:")
       logging.info("    $ " + Colors.BOLD + Colors.RED +
                    "~/.dropbox-dist/dropboxd" + Colors.END)
 
@@ -519,8 +404,8 @@ class Fluid(Task):
           appname = os.path.basename(app)
           if not os.path.exists("/Applications/" + os.path.basename(app)):
             task_print("Installing {app}".format(**vars()))
-            shell("cp -r '{}/fluid.apps/{}' '/Applications/{}'".format(
-                PRIVATE, app, app))
+            shell("cp -r '{}/fluid.apps/{}' '/Applications/{}'"
+                  .format(PRIVATE, app, app))
 
   def upgrade_osx(self):
     Homebrew().upgrade_cask("fluid")
@@ -534,27 +419,27 @@ class SshConfig(Task):
       "~/.ssh/authorized_keys",
       "~/.ssh/known_hosts",
       "~/.ssh/config",
+      "~/.ssh/id_rsa.ppk",
+      "~/.ssh/id_rsa.pub",
+      "~/.ssh/id_rsa",
   ]
 
   def install(self):
-    # Dropbox doesn't sync file permissions. Restore them here.
-    shell('find {}/ssh -type f -exec chmod 0600 {{}} \;'.format(PRIVATE))
-
     mkdir("~/.ssh")
-    for file in ['authorized_keys', 'known_hosts', 'config']:
+    shell('chmod 600 "' + PRIVATE + '"/ssh/*')
+
+    for file in ['authorized_keys', 'known_hosts', 'config', 'id_rsa.ppk', 'id_rsa.pub']:
       src = os.path.join(PRIVATE, "ssh", file)
       dst = os.path.join("~/.ssh", file)
+
       if shell_ok("test $(stat -c %U '{src}') = $USER".format(**vars())):
         symlink(src, dst)
       else:
         copy_file(src, dst)
+        shell("chmod 600 {dst}".format(**vars()))
 
-    host_dir = os.path.join(PRIVATE, 'ssh', HOSTNAME)
-    if os.path.isdir(host_dir):
-      copy_file(os.path.join(host_dir, "id_rsa"), "~/.ssh/id_rsa")
-      copy_file(os.path.join(host_dir, "id_rsa.pub"), "~/.ssh/id_rsa.pub")
-
-    shell("chmod 600 ~/.ssh/*")
+    copy_file(os.path.join(PRIVATE, "ssh", "id_rsa"), "~/.ssh/id_rsa")
+    shell("chmod 600 ~/.ssh/id_rsa")
 
 
 class Netdata(Task):
@@ -574,10 +459,8 @@ class Netdata(Task):
   def teardown(self):
     if self.installed:
       logging.info("")
-      logging.info(
-          "NOTE: manual steps required to complete netdata installation:")
-      logging.info("    $ " + Colors.BOLD + Colors.RED + "crontab -e" +
-                   Colors.END)
+      logging.info("NOTE: manual steps required to complete netdata installation:")
+      logging.info("    $ " + Colors.BOLD + Colors.RED + "crontab -e" + Colors.END)
       logging.info("    # append the following line to the end and save:")
       logging.info("    @reboot ~/.dotfiles/usr/share/crontab/start-netdata.sh")
 
@@ -601,17 +484,15 @@ class WacomDriver(Task):
   def teardown(self):
     if self.installed:
       logging.info("")
-      logging.info(
-          "NOTE: manual steps required to complete Wacom driver setup:")
-      logging.info(
-          "    " + Colors.BOLD + Colors.RED +
-          "Enable Wacom kernel extension in System Preferences > Security & Privacy"
-          + Colors.END)
+      logging.info("NOTE: manual steps required to complete Wacom driver setup:")
+      logging.info("    " + Colors.BOLD + Colors.RED +
+                   "Enable Wacom kernel extension in System Preferences > Security & Privacy" +
+                   Colors.END)
 
 
 class Node(Task):
   """ nodejs and npm """
-  PKG_LIST = "/tmp/npm-list.txt"
+  PKG_LIST = os.path.abspath(".npm-list.txt")
   NPM_BINARY = Homebrew.bin('npm')
   NODE_BINARY = Homebrew.bin('node')
 
@@ -635,8 +516,7 @@ class Node(Task):
     if not os.path.isfile(self.PKG_LIST):
       shell("{self.NPM_BINARY} list -g > {self.PKG_LIST}".format(**vars()))
 
-    if not shell_ok(
-        "grep '{package}@{version}' <{self.PKG_LIST}".format(**vars())):
+    if not shell_ok("grep '{package}@{version}' <{self.PKG_LIST}".format(**vars())):
       task_print("npm install -g {package}@{version}".format(**vars()))
       shell("{self.NPM_BINARY} install -g {package}@{version}".format(**vars()))
       return True
@@ -655,7 +535,7 @@ class Zsh(Task):
       '~/.zshrc',
   ]
   __osx_genfiles__ = ['/usr/local/bin/zsh']
-  __linux_genfiles__ = ['/bin/zsh']
+  __linux_genfiles__ = ['/usr/bin/zsh']
   __versions__ = {
       "oh-my-zsh": "c3b072eace1ce19a48e36c2ead5932ae2d2e06d9",
       "zsh-syntax-highlighting": "b07ada1255b74c25fbc96901f2b77dc4bd81de1a",
@@ -663,31 +543,25 @@ class Zsh(Task):
 
   def install_osx(self):
     Homebrew().install_package("zsh")
-    self.install_common()
+    self.install()
 
-  def install_linux(self):
-    Apt().install_package('zsh')
-    self.install_common()
-
-  def install_common(self):
+  def install(self):
     # install config files
     symlink(usr_share("Zsh"), "~/.zsh")
     symlink(usr_share("Zsh/zshrc"), "~/.zshrc")
     symlink(usr_share("Zsh/zshenv"), "~/.zshenv")
 
     # oh-my-zsh
-    clone_git_repo(
-        github_repo("robbyrussell", "oh-my-zsh"), "~/.oh-my-zsh",
-        self.__versions__["oh-my-zsh"])
+    clone_git_repo(github_repo("robbyrussell", "oh-my-zsh"),
+                   "~/.oh-my-zsh", self.__versions__["oh-my-zsh"])
     symlink("~/.zsh/cec.zsh-theme", "~/.oh-my-zsh/custom/cec.zsh-theme")
 
     # syntax highlighting module
-    clone_git_repo(
-        github_repo("zsh-users", "zsh-syntax-highlighting"),
-        "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting",
-        self.__versions__["zsh-syntax-highlighting"])
+    clone_git_repo(github_repo("zsh-users", "zsh-syntax-highlighting"),
+                   "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting",
+                   self.__versions__["zsh-syntax-highlighting"])
 
-  def upgrade(self):
+  def upgrade_osx(self):
     Homebrew().upgrade_package("zsh")
 
 
@@ -712,31 +586,14 @@ class ZshBazelCompletion(Task):
   }
 
   def install(self):
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-    url = ('https://raw.githubusercontent.com/bazelbuild/bazel/{}/'
-           'scripts/zsh_completion/_bazel').format(
-               self.__versions__['bazel_completion'])
-=======
-    # See: https://docs.bazel.build/versions/master/install.html#zsh
-    # TODO(cec): Rather than clone an enormous repo, just download the single
-    # file we need:
-    # https://raw.githubusercontent.com/bazelbuild/bazel/bffa2db380cb3ca2fd9262ac5a45d02518376e03/scripts/zsh_completion/_bazel
->>>>>>> db63ce893... Add a note to improve bazel autocomplete.:dotfiles.py
-=======
     url = ('https://raw.githubusercontent.com/bazelbuild/bazel/{}/'
            'scripts/zsh_completion/_bazel').format(
               self.__versions__['bazel_completion'])
->>>>>>> e0bfca9ee... Download only the one bazel file needed.:dotfiles.py
     bazel = os.path.expanduser("~/.bazel_tmp")
     shell("rm -rf {bazel}".format(**vars()))
 
     if not os.path.isfile(os.path.expanduser("~/.zsh/completion/_bazel")):
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-      # FIXME: shell("fpath[1,0]=~/.zsh/completion/")
-=======
       shell("fpath[1,0]=~/.zsh/completion/")
->>>>>>> e0bfca9ee... Download only the one bazel file needed.:dotfiles.py
       mkdir("~/.zsh/completion/")
       shell("wget {url} -O ~/.zsh/completion/_bazel".format(**vars()))
 
@@ -748,7 +605,7 @@ class Autoenv(Task):
   """ 'cd' wrapper """
   __platforms__ = ['linux', 'osx']
   __deps__ = ['Python']
-  __genfiles__ = [Homebrew.bin('activate.sh')]
+  __genfiles__ = ['/usr/local/bin/activate.sh']
 
   def install(self):
     Python().pip_install("autoenv", "1.0.0")
@@ -757,11 +614,14 @@ class Autoenv(Task):
 class Lmk(Task):
   """ let-me-know """
   __platforms__ = ['linux', 'osx']
-  __deps__ = ['Python', 'Phd']
+  __deps__ = ['Python']
   __genfiles__ = ['/usr/local/bin/lmk']
+  __versions__ = {
+      "lmk": "0.0.13"
+  }
 
   def install(self):
-    symlink('~/phd/util/lmk/lmk.py', '/usr/local/bin/lmk', sudo=True)
+    Python().pip_install("lmk", self.__versions__["lmk"])
 
 
 class LmkConfig(Task):
@@ -781,26 +641,20 @@ class Git(Task):
   __osx_deps__ = ['Homebrew']
   __genfiles__ = ['~/.gitconfig']
 
-  def install(self):
+  def install_ubuntu(self):
+    Apt().install_package('git')
+    self.install()
+
+  def install_osx(self):
     Homebrew().install_package('git')
+    self.install()
+
+  def install(self):
     if not IS_TRAVIS_CI:
       symlink(usr_share("git/gitconfig"), "~/.gitconfig")
 
-  def upgrade(self):
+  def upgrade_osx(self):
     Homebrew().upgrade_package("git")
-
-
-class GitLfs(Task):
-  """git-lfs"""
-  __platforms__ = ['linux', 'osx']
-  __deps__ = ['Homebrew']
-  __genfiles__ = [Homebrew.bin('git-lfs')]
-
-  def install(selfs):
-    Homebrew().install_package('git-lfs')
-
-  def upgrade(self):
-    Homebrew().upgrade_package('git-lfs')
 
 
 class GitPrivate(Task):
@@ -826,24 +680,19 @@ class Gogs(Task):
   __platforms__ = ["linux"]
   __hosts__ = ["ryangosling"]
   __deps__ = ["MySQL"]
-  __genfiles__ = [
-      "/opt/gogs",
-      '/var/log/gogs.log',
-  ]
+  __genfiles__ = ["/opt/gogs"]
   __versions__ = {
       "gogs": "0.11.34",
   }
 
   def install(self):
-    url = ("https://dl.gogs.io/{self.__versions__['gogs']}/linux_amd64.tar.gz".
-           format(**vars()))
+    url = ("https://dl.gogs.io/{self.__versions__['gogs']}/linux_amd64.tar.gz"
+           .format(**vars()))
     shell("wget {url} -O /tmp/gogs.tar.gz".format(**vars()))
     shell("cd /tmp && tar xjf linux_amd64.tar.gz")
     shell("rm linux_amd64.tar.gz")
     shell("sudo mv gogs /opt/gogs")
     shell("sudo chown -R cec:cec /opt/gogs")
-    if not os.path.isfile('/var/log/gogs.log'):
-      shell("sudo ln -s /opt/gogs/log/gogs.log /var/log/gogs.log")
 
 
 class GogsConfig(Task):
@@ -854,8 +703,8 @@ class GogsConfig(Task):
   __genfiles__ = ["/opt/gogs/custom/conf/app.ini"]
 
   def install(self):
-    symlink(
-        usr_share("gogs/custom/conf/app.ini"), "/opt/gogs/custom/conf/app.ini")
+    symlink(usr_share("gogs/custom/conf/app.ini"),
+            "/opt/gogs/custom/conf/app.ini")
 
 
 class Wallpaper(Task):
@@ -871,35 +720,30 @@ class Wallpaper(Task):
     path = os.path.expanduser(self.WALLPAPERS[HOSTNAME])
     if os.path.exists(path):
       shell("osascript -e 'tell application \"Finder\" to set " +
-            "desktop picture to POSIX file \"{path}\"'".format(**vars()))
+            "desktop picture to POSIX file \"{path}\"'"
+            .format(**vars()))
 
 
 class GnuCoreutils(Task):
   """ replace BSD utils with GNU """
-  __platforms__ = ['linux', 'osx']
-  __osx_deps__ = ['Homebrew']
-  __osx_genfiles__ = [
+  __platforms__ = ['osx']
+  __deps__ = ['Homebrew']
+  __genfiles__ = [
       '/usr/local/opt/coreutils/libexec/gnubin/cp',
       '/usr/local/opt/gnu-sed/libexec/gnubin/sed',
       '/usr/local/opt/gnu-tar/libexec/gnubin/tar',
   ]
 
-  def install_linux(self):
-    # Already there.
-    pass
-
-  def install_osx(self):
+  def install(self):
     Homebrew().install_package('coreutils')
-    Homebrew().install_package('findutils')
     Homebrew().install_package('gnu-indent')
     Homebrew().install_package('gnu-sed')
     Homebrew().install_package('gnu-tar')
     Homebrew().install_package('gnu-time')
     Homebrew().install_package('gnu-which')
 
-  def upgrade_osx(self):
+  def upgrade(self):
     Homebrew().upgrade_package("coreutils")
-    Homebrew().upgrade_package('findutils')
     Homebrew().upgrade_package('gnu-indent')
     Homebrew().upgrade_package('gnu-sed')
     Homebrew().upgrade_package('gnu-tar')
@@ -913,22 +757,10 @@ class DiffSoFancy(Task):
 
   __platforms__ = ['linux', 'osx']
   __deps__ = ['Git', 'Node']
-  __genfiles__ = [Homebrew.bin('diff-so-fancy')]
+  __genfiles__ = ['/usr/local/bin/diff-so-fancy']
 
   def install(self):
     Node().npm_install("diff-so-fancy", self.VERSION)
-
-
-class Nbdime(Task):
-  """ diffs for Jupyter notebooks """
-  VERSION = '1.0.0'
-
-  __platforms__ = ['linux', 'osx']
-  __deps__ = ['Git', 'Python']
-  __genfiles__ = [Homebrew.bin('nbdime')]
-
-  def install(self):
-    Python().pip_install('nbdime', self.VERSION)
 
 
 class GhArchiver(Task):
@@ -937,10 +769,10 @@ class GhArchiver(Task):
 
   __platforms__ = ['linux', 'osx']
   __deps__ = ['Python']
-  __genfiles__ = [Homebrew.bin('gh-archiver')]
+  __genfiles__ = ['/usr/local/bin/gh-archiver']
 
   def install(self):
-    Python().pip_install("gh-archiver", self.VERSION)
+    Python().pip_install("gh-archiver", self.VERSION, pip="python3.6 -m pip")
 
 
 class Tmux(Task):
@@ -954,7 +786,7 @@ class Tmux(Task):
     Homebrew().install_package("tmux")
     self._install_common()
 
-  def install_linux(self):
+  def install_ubuntu(self):
     Apt().install_package("tmux")
     self._install_common()
 
@@ -963,9 +795,6 @@ class Tmux(Task):
 
   def upgrade_osx(self):
     Homebrew().upgrade_package("tmux")
-
-  def upgrade_linux(self):
-    Apt().upgrade_package("tmux")
 
 
 class Vim(Task):
@@ -981,26 +810,20 @@ class Vim(Task):
 
   def install_osx(self):
     Homebrew().install_package('vim')
-    self.install_common()
+    self.install()
 
-  def install_linux(self):
+  def install_ubuntu(self):
     Apt().install_package('vim')
-    self.install_common()
+    self.install()
 
-  def install_common(self):
+  def install(self):
     symlink(usr_share("Vim/vimrc"), "~/.vimrc")
 
     # Vundle
-    clone_git_repo(
-        github_repo("VundleVim", "Vundle.vim"), "~/.vim/bundle/Vundle.vim",
-        self.__versions__["vundle"])
-    if os.path.isfile(Homebrew.bin('vim')):
-      # We use the absolute path to vim since on first run we won't
-      # necessarily have the homebrew bin directory in out $PATH.
-      vim = Homebrew.bin('vim')
-    else:
-      vim = 'vim'
-    shell("{vim} +PluginInstall +qall".format(vim=vim))
+    clone_git_repo(github_repo("VundleVim", "Vundle.vim"),
+                   "~/.vim/bundle/Vundle.vim",
+                   self.__versions__["vundle"])
+    shell("vim +PluginInstall +qall")
 
   def upgrade_osx(self):
     Homebrew().upgrade_package("vim")
@@ -1030,10 +853,8 @@ class Linters(Task):
   def install_osx(self):
     Python().pip_install("cpplint", version=self.__versions__["cpplint"])
     Node().npm_install("csslint", version=self.__versions__["csslint"])
-    Python().pip_install(
-        "pycodestyle",
-        version=self.__versions__["pycodestyle"],
-        python=Python.PYTHON3_BINARY)
+    Python().pip_install("pycodestyle", version=self.__versions__["pycodestyle"],
+                         pip="pip3.6")
     Homebrew().install_package("tidy-html5")
     Homebrew().install_package("buildifier")
     Go().get('github.com/ckaznocha/protoc-gen-lint')
@@ -1047,17 +868,20 @@ class SublimeText(Task):
   """ sublime text """
   __platforms__ = ['linux', 'osx']
   __osx_deps__ = ['Homebrew', 'Linters']
-  __genfiles__ = ['/usr/local/bin/rsub']
-  __osx_genfiles__ = ['/usr/local/bin/subl', '/Applications/Sublime Text.app']
+  __genfiles__ = [
+      '/usr/local/bin/rsub'
+  ]
+  __osx_genfiles__ = [
+      '/usr/local/bin/subl',
+      '/Applications/Sublime Text.app'
+  ]
 
   def install_osx(self):
     Homebrew().install_cask("sublime-text")
 
     # Put sublime text in PATH
-    symlink(
-        "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl",
-        "/usr/local/bin/subl",
-        sudo=True)
+    symlink("/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl",
+            "/usr/local/bin/subl", sudo=True)
 
     symlink("~/Library/Application Support/Sublime Text 3", "~/.subl")
 
@@ -1125,27 +949,19 @@ class SsmtpConfig(Task):
   __genfiles__ = ["/etc/ssmtp/ssmtp.conf"]
 
   def install_ubuntu(self):
-    symlink(
-        os.path.join(PRIVATE, "ssmtp", "ssmtp.conf"),
-        "/etc/ssmtp/ssmtp.conf",
-        sudo=True)
+    symlink(os.path.join(PRIVATE, "ssmtp", "ssmtp.conf"),
+            "/etc/ssmtp/ssmtp.conf", sudo=True)
 
 
 class MySQL(Task):
   """ mysql pacakge """
   __platforms__ = ['linux', 'osx']
-  __osx_genfiles__ = [Homebrew.bin("mysql")]
-  __linux_genfiles__ = ['/usr/bin/mysql']
+  __genfiles__ = [Homebrew.bin("mysql")]
   __deps__ = ['Homebrew']
 
-  def install_osx(self):
+  def install(self):
     Homebrew().install_package("mysql")
-    Homebrew.brew_command("services start mysql")
-
-  def install_ubuntu(self):
-    # Currently (2018-05-17), homebrew mysql does not appear to work.
-    Apt().install_package("mysql-server")
-    shell("sudo systemctl enable mysql")
+    shell("brew services start mysql")
 
 
 class MySQLConfig(Task):
@@ -1160,29 +976,19 @@ class MySQLConfig(Task):
 
 class LaTeX(Task):
   """ latex compiler and libraries """
-  __platforms__ = ['linux', 'osx']
+  __platforms__ = ['osx']
   __osx_deps__ = ['Homebrew']
   __osx_genfiles__ = [
       '/Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin/pdflatex',
       '/Applications/texstudio.app',
-      '/Applications/texstudio.app/Contents/Resources/en_GB.ign'
   ]
 
   def install_osx(self):
     Homebrew().install_cask("mactex")
     Homebrew().install_cask("texstudio")
-    # The poppler package contains the tool pdffonts, useful detecting Type 3
-    # fonts.
-    Homebrew().install_package('poppler')
     self.install()
-    symlink(os.path.join(PRIVATE, 'texstudio', 'en_GB.ign'),
-            '/Applications/texstudio.app/Contents/Resources/en_GB.ign')
 
-  def install_linux(self):
-    Apt().install_package('texlive-full')
-    Apt().install_package('biber')
-
-  def upgrade_osx(self):
+  def upgrade_osc(self):
     Homebrew().upgrade_cask("mactex")
     Homebrew().upgrade_cask("texstudio")
 
@@ -1192,7 +998,10 @@ class LaTeXScripts(Task):
   __platforms__ = ['linux', 'osx']
   __osx_deps__ = ['LaTeX']
   __reqs__ = [lambda: which("pdflatex")]
-  __genfiles__ = ["~/.local/bin/autotex", "~/.local/bin/cleanbib"]
+  __genfiles__ = [
+      "~/.local/bin/autotex",
+      "~/.local/bin/cleanbib"
+  ]
 
   def install(self):
     mkdir("~/.local/bin")
@@ -1213,8 +1022,7 @@ class AdobeCreativeCloud(Task):
     self.installed = False
 
   def install(self):
-    if not os.path.exists(
-        '/Applications/Adobe Lightroom CC/Adobe Lightroom CC.app'):
+    if not os.path.exists('/Applications/Adobe Lightroom CC/Adobe Lightroom CC.app'):
       Homebrew().install_cask('adobe-creative-cloud')
       self.installed = True
     if not os.path.exists('/Applications/Nik Collection'):
@@ -1228,16 +1036,13 @@ class AdobeCreativeCloud(Task):
   def teardown(self):
     if self.installed:
       logging.info("")
-      logging.info(
-          "NOTE: manual step required to complete creative cloud installation:")
-      logging.info(
-          "    $ " + Colors.BOLD + Colors.RED +
-          "open '/usr/local/Caskroom/adobe-creative-cloud/latest/Creative Cloud Installer.app'"
-          + Colors.END)
-      logging.info(
-          "    $ " + Colors.BOLD + Colors.RED +
-          "open '/usr/local/Caskroom/google-nik-collection/1.2.11/Nik Collection.app'"
-          + Colors.END)
+      logging.info("NOTE: manual step required to complete creative cloud installation:")
+      logging.info("    $ " + Colors.BOLD + Colors.RED +
+                   "open '/usr/local/Caskroom/adobe-creative-cloud/latest/Creative Cloud Installer.app'" +
+                   Colors.END)
+      logging.info("    $ " + Colors.BOLD + Colors.RED +
+                   "open '/usr/local/Caskroom/google-nik-collection/1.2.11/Nik Collection.app'" +
+                   Colors.END)
 
 
 class MacOSConfig(Task):
@@ -1253,8 +1058,8 @@ class MacOSConfig(Task):
     hidden = "true" if hidden else "false"
 
     shell("osascript -e 'tell application \"System Events\" to make login "
-          "item at end with properties {{path:\"{path}\", hidden:{hidden}}}'".
-          format(**vars()))
+          "item at end with properties {{path:\"{path}\", hidden:{hidden}}}'"
+          .format(**vars()))
 
   def install_osx(self):
     # Based on: https://github.com/holman/dotfiles/blob/master/macos/set-defaults.sh
@@ -1275,12 +1080,8 @@ class MacOSConfig(Task):
     shell("defaults write NSGlobalDomain KeyRepeat -int 1")
 
     # Set the Finder prefs for showing a few different volumes on the Desktop.
-    shell(
-        "defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool false"
-    )
-    shell(
-        "defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool false"
-    )
+    shell("defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool false")
+    shell("defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool false")
 
     # Run the screensaver if we're in the bottom-left hot corner.
     shell("defaults write com.apple.dock wvous-bl-corner -int 5")
@@ -1289,12 +1090,9 @@ class MacOSConfig(Task):
     # Set up Safari for development.
     shell("defaults write com.apple.Safari IncludeInternalDebugMenu -bool true")
     shell("defaults write com.apple.Safari IncludeDevelopMenu -bool true")
+    shell("defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true")
     shell(
-        "defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true"
-    )
-    shell(
-        'defaults write com.apple.Safari "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" -bool true'
-    )
+        'defaults write com.apple.Safari "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" -bool true')
     shell("defaults write NSGlobalDomain WebKitDeveloperExtras -bool true")
 
     # disable "Last Login ..." messages on terminal
@@ -1327,7 +1125,6 @@ class HomebrewCasks(Task):
       'calibre': '/Applications/calibre.app',
       'dash': '/Applications/Dash.app',
       'disk-inventory-x': '/Applications/Disk Inventory X.app',
-      'etcher': '/Applications/Etcher.app',
       'fantastical': '/Applications/Fantastical 2.app',
       'fluid': '/Applications/Fluid.app',
       'flux': '/Applications/Flux.app',
@@ -1426,37 +1223,28 @@ class Emacs(Task):
       "prelude": "f7d5d68d432319bb66a5f9410d2e4eadd584f498",
   }
 
-  def install(self):
+  def install_osx(self):
     Homebrew().install_cask('emacs')
     self._install_common()
 
   def install_ubuntu(self):
-    Homebrew().install_package('emacs')
+    Apt().install_package('emacs')
     self._install_common()
 
   def _install_common(self):
-    clone_git_repo(
-        github_repo("bbatsov", "prelude"), "~/.emacs.d",
-        self.__versions__["prelude"])
+    clone_git_repo(github_repo("bbatsov", "prelude"),
+                   "~/.emacs.d", self.__versions__["prelude"])
     # prelude requires there be no ~/.emacs file on first run
     Trash().trash('~/.emacs')
 
-  def upgrade(self):
+  def upgrade_osx(self):
     Homebrew().upgrade_cask('emacs')
 
 
 class Graphviz(Task):
   """ graph visualization software """
   __platforms__ = ['osx', 'linux']
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
   __deps__ = ['Homebrew']
-=======
-  __deps__ ['Homebrew']
->>>>>>> 848569a8c... Install Graphviz.:dotfiles.py
-=======
-  __deps__ = ['Homebrew']
->>>>>>> f6d6b588d... Fix syntax error.:dotfiles.py
 
   def install(self):
     Homebrew().install_package('graphviz')
@@ -1472,8 +1260,7 @@ class AppStore(Task):
 
     # Check that dotfiles was configured with Apple ID
     if not APPLE_ID:
-      logging.critical(
-          "\nerror: Apple ID not set! Run ./configure --apple-id <email>")
+      logging.critical("\nerror: Apple ID not set! Run ./configure --apple-id <email>")
       sys.exit(1)
 
     # Sign in to App Store using Apple ID. Note that if the user is
@@ -1527,7 +1314,9 @@ class AppStoreApps(Task):
 
 
 class DianaApps(Task):
-  APPS = {883878097: '/Applications/Server.app'}
+  APPS = {
+      883878097: '/Applications/Server.app'
+  }
 
   __platforms__ = ['osx']
   __hosts__ = ['diana']
@@ -1569,10 +1358,13 @@ class Ncdu(Task):
   __osx_genfiles__ = ['/usr/local/bin/ncdu']
   __linux_genfiles__ = ['/usr/bin/ncdu']
 
-  def install(self):
+  def install_osx(self):
     Homebrew().install_package("ncdu")
 
-  def upgrade(self):
+  def install_ubuntu(self):
+    Apt().install_package("ncdu")
+
+  def upgrade_osx(self):
     Homebrew().upgrade_package("ncdu")
 
 
@@ -1631,16 +1423,14 @@ class OmniFocus(Task):
       "ofexport": "1.0.20",
   }
 
-  OFEXPORT_URL = "https://github.com/psidnell/ofexport2/archive/ofexport-v2-" + \
-                 __versions__["ofexport"] + ".zip"
+  OFEXPORT_URL = "https://github.com/psidnell/ofexport2/archive/ofexport-v2-" + __versions__["ofexport"] + ".zip"
 
   def install_osx(self):
     Homebrew().install_cask('omnifocus')
 
     # Check that of2 is installed and is the correct version
     if (not os.path.exists("/usr/local/opt/ofexport/bin/of2") and
-        shell("/usr/local/opt/ofexport/bin/of2 -h").split("\n")[2] !=
-        "Version: " + self.__versions__["ofexport"]):
+        shell("/usr/local/opt/ofexport/bin/of2 -h").split("\n")[2] != "Version: " + self.__versions__["ofexport"]):
       task_print("Downloading ofexport")
       shell("rm -rf /usr/local/opt/ofexport")
       url, ver = self.OFEXPORT_URL, self.__versions__["ofexport"]
@@ -1648,8 +1438,7 @@ class OmniFocus(Task):
       task_print("Installing ofexport")
       shell("unzip -o /tmp/ofexport.zip")
       shell("rm -f /tmp/ofexport.zip")
-      shell("mv ofexport2-ofexport-v2-{ver} /usr/local/opt/ofexport".format(
-          **vars()))
+      shell("mv ofexport2-ofexport-v2-{ver} /usr/local/opt/ofexport".format(**vars()))
 
     # Run common-install commands:
     self.install()
@@ -1686,7 +1475,10 @@ class MeCsv(Task):
   __platforms__ = ['osx']
   __osx_deps__ = ['OmniFocus']
   __reqs__ = [lambda: os.path.isdir(os.path.join(PRIVATE, "me.csv"))]
-  __genfiles__ = ["~/.me.json", "~/me.csv"]
+  __genfiles__ = [
+      "~/.me.json",
+      "~/me.csv"
+  ]
 
   def install_osx(self):
     symlink(os.path.join(PRIVATE, "me.csv", "config.json"), "~/.me.json")
@@ -1696,36 +1488,29 @@ class MeCsv(Task):
 class Bazel(Task):
   """ bazel build system """
   __platforms__ = ['linux', 'osx']
-  __deps__ = ['Curl']
-  __osx_deps__ = ['Java', 'Homebrew']
-  __linux_deps__ = ['Zip']
-  __genfiles__ = ['/usr/local/bin/bazel']
+  __deps__ = ['Java']
+  __osx_deps__ = ['Homebrew']
+  __osx_genfiles__ = ['/usr/local/bin/bazel']
+  __linux_genfiles__ = ['/usr/bin/bazel']
 
   def install_osx(self):
     Homebrew().install_package('bazel')
 
   def install_ubuntu(self):
-    # Currently (2018-05-17) I have been unable to get the Linuxbrew
-    # distribution of Bazel to build.
     # See: https://docs.bazel.build/versions/master/install-ubuntu.html
-    if not os.path.isfile('/usr/local/bin/bazel'):
-      shell(
-          'curl -L -o /tmp/bazel.sh https://github.com/bazelbuild/bazel/releases/download/0.14.1/bazel-0.14.1-installer-linux-x86_64.sh'
-      )
-      shell('sudo bash /tmp/bazel.sh')
-      shell('rm /tmp/bazel.sh')
+
+    # Add Bazel distribution URY
+    url = "http://storage.googleapis.com/bazel-apt stable jdk1.8"
+    shell('echo "deb [arch=amd64] {url}" | '.format(**vars()) +
+          "sudo tee /etc/apt/sources.list.d/bazel.list")
+    shell('curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -')
+
+    # Install and update Bazel
+    Apt().update()
+    Apt().install_package("bazel")
 
   def upgrade_osx(self):
     Homebrew().upgrade_package("bazel")
-
-
-class Buildifier(Task):
-  __platforms__ = ['linux', 'osx']
-  __deps__ = ['Homebrew', 'Bazel']
-  __genfiles__ = [Homebrew.bin('buildifier')]
-
-  def install(self):
-    Homebrew().install_package('buildifier')
 
 
 class CMake(Task):
@@ -1765,10 +1550,13 @@ class Protobuf(Task):
   __osx_genfiles__ = ['/usr/local/bin/protoc']
   __linux_genfiles__ = ['/usr/bin/protoc']
 
-  def install(self):
+  def install_osx(self):
     Homebrew().install_package('protobuf')
 
-  def upgrade(self):
+  def install_ubuntu(self):
+    Apt().install_package("protobuf")
+
+  def upgrade_osx(self):
     Homebrew().upgrade_package("protobuf")
 
 
@@ -1779,23 +1567,27 @@ class Sloccount(Task):
   __osx_genfiles__ = ['/usr/local/bin/sloccount']
   __linux_genfiles__ = ['/usr/bin/sloccount']
 
-  def install(self):
+  def install_osx(self):
     Homebrew().install_package('sloccount')
 
-  def upgrade(self):
+  def install_ubuntu(self):
+    Apt().install_package("sloccount")
+
+  def upgrade_osx(self):
     Homebrew().upgrade_package("sloccount")
 
 
 class Emu(Task):
   """ backup software """
   VERSION = "0.3.0"
+  PIP = "pip3"
 
   __platforms__ = ['linux', 'osx']
   __deps__ = ['Python']
-  __genfiles__ = [Homebrew.bin('emu')]
+  __genfiles__ = ['/usr/local/bin/emu']
 
   def install(self):
-    Python().pip_install("emu", self.VERSION)
+    Python().pip_install("emu", self.VERSION, pip=self.PIP, sudo=True)
 
 
 class JsonUtil(Task):
@@ -1803,15 +1595,22 @@ class JsonUtil(Task):
   __platforms__ = ['linux', 'osx']
   __deps__ = ['Node']
   __osx_deps__ = ['Homebrew']
-  __genfiles__ = [Homebrew.bin('jsonlint')]
+  __genfiles__ = ['/usr/local/bin/jsonlint']
   __osx_genfiles__ = ['/usr/local/bin/jq']
   __linux_genfiles__ = ['/usr/bin/jq']
   __versions__ = {
       "jsonlint": "1.6.2",
   }
 
-  def install(self):
+  def install_osx(self):
     Homebrew().install_package("jq")
+    self._install_common()
+
+  def install_ubuntu(self):
+    Apt().install_package("jq")
+    self._install_common()
+
+  def _install_common(self):
     Node().npm_install("jsonlint", self.__versions__["jsonlint"])
 
   def upgrade_osx(self):
@@ -1824,41 +1623,21 @@ class Scripts(Task):
   __genfiles__ = [
       '~/.local/bin/mkepisodal',
       '~/.local/bin/rm-dsstore',
-      '~/.local/bin/mp3_transcode',
   ]
 
   def install(self):
     mkdir("~/.local/bin")
     symlink(usr_share("scripts/mkepisodal.py"), "~/.local/bin/mkepisodal")
     symlink(usr_share("scripts/rm-dsstore.sh"), "~/.local/bin/rm-dsstore")
-    symlink(usr_share("scripts/mp3_transcode.sh"), "~/.local/bin/mp3_transcode")
 
   def uninstall(self):
     task_print("Removing scripts")
     Trash().trash(*self.__genfiles__)
 
 
-class FlorenceScripts(Task):
+class DianaScripts(Task):
   """Scripts just for florence."""
   __platforms__ = ['osx']
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-  __hosts__ = ['florence']
-  __deps__ = ["Scripts"]
-  __genfiles__ = [
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-      "~/.local/bin/orange_you_glad_you_backup",
-=======
-      "~/.local/bin/orange",
-      "~/.local/bin/ryan_gosling_give_me_photos",
-      "~/.local/bin/ryan_gosling_have_my_photos",
->>>>>>> 77189bb07... Install photolib scripts on diana.:dotfiles.py
-  ]
-
-  def install(self):
-    symlink(
-        usr_share("scripts/orange_you_glad_you_backup.sh"),
-        "~/.local/bin/orange_you_glad_you_backup")
-=======
   __hosts__ = ['diana']
   __deps__ = ['Scripts']
   __genfiles__ = [
@@ -1871,34 +1650,12 @@ class FlorenceScripts(Task):
             "~/.local/bin/ryan_gosling_give_me_photos")
     symlink(usr_share("scripts/ryan_gosling_have_my_photos.sh"),
             "~/.local/bin/ryan_gosling_have_my_photos")
->>>>>>> 57fc22152... Update diana scripts.:dotfiles.py
 
   def uninstall(self):
     task_print("Removing diana scripts")
     Trash().trash(*self.__genfiles__)
 
 
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-class LibExempi(Task):
-  """ parse XMP metadata """
-  __platforms__ = ['osx', 'linux']
-  __deps__ = ['Homebrew']
-  __genfiles__ = [Homebrew.lib('libexempi.a')]
-
-  def install(self):
-    Homebrew().install_package('exempi')
-
-
-class LibMySQL(Task):
-  __platforms__ = ['osx', 'linux']
-  __deps__ = []
-
-  def install(self):
-    pass
-
-  def install_linux(self):
-    Apt().install_package('libmysqlclient-dev')
-=======
 class FlorenceScripts(Task):
   """Scripts just for florence."""
   __platforms__ = ['osx']
@@ -1923,150 +1680,21 @@ class FlorenceScripts(Task):
             "~/.local/bin/ryan_gosling_have_my_movies")
     symlink(usr_share("scripts/ryan_gosling_have_my_music.sh"),
             "~/.local/bin/ryan_gosling_have_my_music")
->>>>>>> 49230460b... Pull photo library from ryangosling.:dotfiles.py
 
-
-class Clang(Task):
-  __platforms__ = ['linux', 'osx']
-  __deps__ = ['Homebrew']
-  __linux_genfiles__ = [Homebrew.bin('clang')]
-
-  def install_osx(self):
-    # LLVM comes free with macOS.
-    pass
-
-  def install_linux(self):
-    Homebrew().install_package('llvm', '--with-libcxx')
-
-
-class Ninja(Task):
-  __platforms__ = ['linux', 'osx']
-  __deps__ = ['Homebrew']
-  __genfiles__ = [Homebrew.bin('ninja')]
-
-  def install(self):
-    Homebrew().install_package('ninja')
-
-  def upgrade(self):
-    Homebrew().upgrade_package('ninja')
-
-
-class Rsync(Task):
-  __platforms__ = ['linux', 'osx']
-  __linux_genfiles__ = ['/usr/bin/rsync']
-
-  def install_osx(self):
-    # rsync comes free with macOS.
-    pass
-
-  def install_linux(self):
-    Apt().install_package('rsync')
-
-
-class InotifyMaxUserWatchers(Task):
-  __platforms__ = ['linux']
-
-  def install_linux(self):
-    if not shell_ok('grep fs.inotify.max_user_watches /etc/sysctl.conf'):
-      shell(
-          "sudo sh -c 'echo fs.inotify.max_user_watches=1048576 >> /etc/sysctl.conf'"
-      )
-      shell('sudo sysctl -p')
-
-
-class PhdBuildDeps(Task):
-  """ phd repo dependencies"""
-  __platforms__ = ['linux', 'osx']
-  __deps__ = [
-      'Bazel',
-      'GitLfs',
-      'GnuCoreutils',
-      'LaTeX',
-      'LibExempi',
-      'LibMySQL',
-      'Python',
-      'Rsync',
-  ]
-  __linux_deps__ = [
-      'InotifyMaxUserWatchers',
-  ]
-  __osx_deps__ = [
-      # Needed by //labm8:hashcache.
-      'GnuCoreutils',
-  ]
-
-  def install(self):
-    pass
+  def uninstall(self):
+    task_print("Removing florence scripts")
+    Trash().trash(*self.__genfiles__)
 
 
 class Phd(Task):
-  """PhD repo"""
+  """ phd repo """
   __platforms__ = ['linux', 'osx']
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-  __genfiles__ = ['~/phd/.env']
-  __deps__ = ['PhdBuildDeps']
-=======
   __genfiles__ = ['~/phd']
   __deps__ = ['Bazel']
->>>>>>> fc2db958f... Add Bazel dep to PhD repo.:dotfiles.py
 
   def install(self):
     clone_git_repo(github_repo("ChrisCummins", "phd"), "~/phd")
-
-
-class PhdDevDeps(Task):
-  __platforms__ = ['linux', 'osx']
-  __deps__ = [
-      'Buildifier',
-      'Homebrew',
-      'Node',
-      'Phd',
-  ]
-  __linux_deps__ = [
-      'InotifyMaxUserWatchers',
-  ]
-
-  def install(self):
-    shell('cd {phd} && {npm} install husky --save-dev'.format(
-        npm=Node.NPM_BINARY, phd=os.path.expanduser('~/phd')))
-
-
-class TransmissionHeadless(Task):
-  """Headless bittorrent client."""
-  __platforms__ = ['linux']
-  __hosts__ = ['ryangosling']
-  __linux_genfiles__ = [
-      '/usr/share/transmission',
-      '/usr/bin/transmission-cli',
-      '/etc/transmission-daemon',
-      '/usr/bin/transmission-daemon',
-  ]
-
-  def install(self):
-    shell("sudo add-apt-repository -y ppa:transmissionbt/ppa")
-    Apt().update()
-    Apt().install_package("transmission-cli")
-    Apt().install_package("transmission-common")
-    Apt().install_package("transmission-daemon")
-
-
-class TransmissionConfig(Task):
-  """User config for transmission."""
-  CFG = '/etc/transmission-daemon/settings.json'
-
-  __platforms__ = ['linux']
-  __hosts__ = ['ryangosling']
-  __linux_genfiles__ = [CFG]
-  __linux_deps__ = ['TransmissionHeadless']
-
-  def install(self):
-    if not os.path.islink(self.CFG):
-      shell('sudo service transmission-daemon stop')
-      symlink(
-          '{private}/transmission/settings.json'.format(private=PRIVATE),
-          self.CFG,
-          sudo=True)
-      shell('sudo service transmission-daemon start')
+    shell("~/phd/tools/bootstrap.sh | bash")
 
 
 class TransmissionHeadless(Task):
@@ -2107,7 +1735,6 @@ class TransmissionConfig(Task):
 
 class DefaultApps(Task):
   """ set default applications for file extensions """
-  # Use `duti -x epub` to list current file associations.
   __platforms__ = ['osx']
   __deps__ = [
       'AppStoreApps',
@@ -2121,9 +1748,7 @@ class DefaultApps(Task):
   FILE_ASSOCIATIONS = {
       "7z": "cx.c3.theunarchiver",
       "avi": "org.videolan.vlc",
-      "bst": "com.sublimetext.3",
       "c": "com.sublimetext.3",
-      "cls": "com.sublimetext.3",
       "cpp": "com.sublimetext.3",
       "cxx": "com.sublimetext.3",
       "gz": "cx.c3.theunarchiver",
@@ -2149,8 +1774,8 @@ class DefaultApps(Task):
     Homebrew().install_package('duti')
     for extension in self.FILE_ASSOCIATIONS:
       app = self.FILE_ASSOCIATIONS[extension]
-      shell('duti -s {app} .{extension} all'.format(
-          app=app, extension=extension))
+      shell('duti -s {app} .{extension} all'
+            .format(app=app, extension=extension))
 
   def upgrade(self):
     Homebrew().upgrade_package("duti")
@@ -2181,18 +1806,6 @@ class Ripgrep(Task):
     Homebrew().install_package("ripgrep")
 
 
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-class Tower(Task):
-  __platforms__ = ['osx']
-  __osx_deps__ = ['Homebrew']
-  __genfiles__ = ['/Applications/Tower.app']
-
-  def install_osx(self):
-    Homebrew().install_cask('tower')
-
-
-=======
->>>>>>> 427a171ee... Install dnstest script.:dotfiles.py
 class DnsTest(Task):
   """dns performance test"""
   __platforms__ = ['osx', 'linux']
@@ -2209,100 +1822,3 @@ class DnsTest(Task):
       mkdir("~/.local/bin")
       shell("wget '{url}' -O ~/.local/bin/dnstest".format(url=url))
       shell('chmod +x ~/.local/bin/dnstest')
-<<<<<<< HEAD:system/dotfiles/dotfiles.py
-
-
-class PlatformIO(Task):
-  """ Command line tools for building Arduino code. """
-  # See https://platformio.org/
-  __platforms__ = ['linux', 'osx']
-  __deps__ = ['Python']
-  __genfiles__ = ['/usr/local/bin/platformio']
-  __versions__ = {'platformio': '3.6.3'}
-
-  def install_linux(self):
-    self.install()
-    # Linuxbrew installs binaries in ~linuxbrew/.linuxbrew/bin, but the
-    # bazel platformio rules are hardcoded to use only path /usr/local/bin.
-    symlink('/usr/local/bin/platformio',
-            '/home/linuxbrew/.linuxbrew/bin/platformio')
-
-  def install(self):
-    Python().pip_install("autoenv", self.__versions__['platformio'])
-
-  def uninstall_linux(self):
-    # Remove the symlink we created.
-    os.unlink('/usr/local/bin/platformio')
-
-class FinderGo(Task):
-  __platforms__ = ['osx']
-  __versions__ = {'FinderGo': '1.4.0'}
-
-  def __init__(self):
-    self.installed = False
-
-  def install(self):
-    url = ('https://github.com/onmyway133/FinderGo/releases/download/'
-           '{version}/FinderGo.zip'.format(version=self.__versions__['FinderGo']))
-    if not os.path.isfile('/Applications/FinderGo.app'):
-      shell("wget '{url}' -O /Applications/FinderGo.zip".format(url=url))
-      shell("cd /Applications && unzip FinderGo.zip && rm FinderGo.zip")
-      self.installed = True
-
-  def teardown(self):
-    if self.installed:
-      logging.info("")
-      logging.info(
-          "NOTE: manual step required to complete FinderGo installation:")
-      logging.info(
-          "    " + Colors.BOLD + Colors.RED +
-          "Cmd+click and drag /Applications/FinderGo.app into Finder toolbar"
-          + Colors.END)
-
-
-class Bat(Task):
-  __platforms__ = ['osx']
-
-  def install(self):
-    Homebrew().install_package("bat")
-
-
-class Autojump(Task):
-  __platforms__ = ['osx']
-
-  def install(self):
-    Homebrew().install_package("autojump")
-
-
-class Fselect(Task):
-  # https://github.com/jhspetersson/fselect
-  __platforms__ = ['osx']
-
-  def install(self):
-    Homebrew().install_package("fselect")
-
-
-class Glances(Task):
-  # https://github.com/nicolargo/glances
-  __platforms__ = ['osx', 'linux']
-
-  def install(self):
-    shell("curl -L https://bit.ly/glances | /bin/bash")
-
-
-class Mycli(Task):
-  # https://github.com/nicolargo/glances
-  __platforms__ = ['osx', 'linux']
-
-  def install(self):
-    Python().pip_install('mycli', '1.19.0', sudo=True)
-
-
-class DbBrowser(Task):
-  # https://sqlitebrowser.org/
-  __platforms__ = ['osx']
-
-  def install(self):
-    Homebrew().install_cask("db-browser-for-sqlite")
-=======
->>>>>>> 427a171ee... Install dnstest script.:dotfiles.py

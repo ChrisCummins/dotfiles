@@ -32,11 +32,6 @@ export REPORTTIME=30
 
 export LOGCHECK=60
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-export LMK_TO="chrisc.101@gmail.com"
-
-=======
->>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 autoload zsh/sched
 
 # Renaming with globbing
@@ -171,151 +166,6 @@ zstyle ':completion:*' cache-path /usr/share/zsh/cache
 export ZSH=~/.oh-my-zsh
 source ~/.oh-my-zsh/oh-my-zsh.sh
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-=======
-# --------------------------------------------------------------------------
-# Shell environment.
-# --------------------------------------------------------------------------
-export HISTIGNORE="&:ls:[bf]g:exit:reset:clear:cd:cd ..:cd.."
-export HISTSIZE=25000
-export HISTFILE=~/.zsh_history
-export SAVEHIST=10000
-export TERM=xterm-256color
-
-# Say how long a command took, if it took more than 30 seconds.
-export REPORTTIME=30
-
-export LOGCHECK=60
-
-# Pagers and editors.
-export VIEW=/usr/bin/elinks
-export PAGER="less"
-export LESS="--ignore-case --LONG-PROMPT --QUIET --chop-long-lines -Sm \
-             --RAW-CONTROL-CHARS --quit-if-one-screen --no-init"
-if [[ -x $(which lesspipe.sh) ]]; then
-    export LESSOPEN="| lesspipe.sh %s"
-fi
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
-
-export EDITOR='vim'
-# sublime for local shell, rsub if on a remote machine
-# arguments: --wait block until closed, -n open a new window
-# if [[ -f /usr/local/bin/subl ]]; then
-#     export EDITOR='subl -n --wait'
-# else
-#     export EDITOR='rsub -n --wait'
-# fi
-export ALTERNATE_EDITOR=''
-export USE_EDITOR=$EDITOR
-export VISUAL=$EDITOR
-
-# Development environment.
-export USE_CCACHE=1
-
-# Don't modify prompt when activating Python virtualenv environments.
-# This is because our zsh prompt includes this information.
-#
-# See: https://virtualenv.pypa.io/en/stable/reference/#envvar-VIRTUAL_ENV_DISABLE_PROMPT
-export VIRTUAL_ENV_DISABLE_PROMPT=1
-
-# travis tab completion
-[ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
-
-# torch environment
-[ -f ~/torch/install/bin/torch-activate ] && source ~/torch/install/bin/torch-activate
-
-# rbenv shims. https://github.com/sstephenson/rbenv#how-it-works
-if [[ -x $(which rbenv) ]]; then
-    eval "$(rbenv init -)"
-fi
-
-# --------------------------------------------------------------------------
-# Paths.
-# --------------------------------------------------------------------------
-
-# Accepts an array of directories and returns a colon separated path
-# of all of the directories that exist, in order.  Example usage:
-#
-#    dirs=("/usr/local/bin" /usr/bin "/not a real path")
-#    unset FOO
-#    FOO=$(build_path "${dirs[@]}")
-#    echo $FOO
-#    # Outputs: /usr/local/bin:/usr/bin
-build_path() {
-    local _dir=""
-    local _path=""
-
-    for _dir in "$@"
-    do
-        if [ -d $_dir ]; then
-            _path=$_path:$_dir
-        fi
-    done
-
-    _path=${_path:1}
-    echo $_path
-}
-
-export NODE_PATH=/usr/local/lib/node_modules
-
-setopt nullglob # Globs which don't match anything expand to nothing.
-pkg_config_path_dirs=( \
-    /usr/local/lib/pkgconfig \
-    /usr/lib/pkgconfig \
-)
-export PKG_CONFIG_PATH=$(build_path "${pkg_config_path_dirs[@]}")
-
-ld_library_path_dirs=( \
-    /usr/lib \
-    /usr/lib32 \
-    /usr/local/lib \
-    /usr/local/cuda/lib64 \
-)
-export LD_LIBRARY_PATH=$(build_path "${ld_library_path_dirs[@]}")
-
-path_dirs=( \
-    ~/bin \
-    ~/.rbenv/shims \
-    ~/.local/bin \
-    ~/.gem/*/*/bin \
-    ~/.gem/*/ruby/*/bin \
-    /Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin \
-    /usr/local/opt/coreutils/libexec/gnubin \
-    /usr/local/opt/gnu-sed/libexec/gnubin \
-    /usr/local/opt/gnu-tar/libexec/gnubin \
-    /usr/local/opt/python/bin \
-    /usr/local/opt/unzip/bin \
-    /usr/local/opt/ofexport/bin \
-    /usr/local/bin \
-    /usr/contrib/bin \
-    /usr/local/cuda/bin \
-    /opt/bin \
-    /opt/local/bin \
-    /opt/local/sbin \
-    /bin \
-    /usr/bin \
-    /usr/bin/core_perl \
-    /usr/bin/vendor_perl \
-    /usr/local/mysql/bin \
-    /usr/sbin \
-    /usr/texbin \
-    /sbin \
-)
-export PATH=$(build_path "${path_dirs[@]}")
-
-manpath_dirs=( \
-    /Library/TeX/Distributions/.DefaultTeX/Contents/Man/ \
-    /usr/local/opt/coreutils/libexec/gnuman \
-    /usr/local/opt/gnu-sed/libexec/gnuman \
-    /usr/local/opt/gnu-tar/libexec/gnuman \
-)
-export MANPATH=$(build_path "${manpath_dirs[@]}")
-
-unsetopt nullglob
->>>>>>> 3dc54d6e6... zsh: use a private/ directory:zsh/zshrc
-=======
->>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 
 # --------------------------------------------------------------------------
 # Aliases.
@@ -326,26 +176,8 @@ alias exit='disown &>/dev/null; exit'
 
 alias off='sudo shutdown -h now'
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-# Use diff-so-fancy by default
-alias diff='git diff --no-index'
-
-=======
->>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 # Shortcuts.
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 alias c='clear'
-=======
-alias a='atom'
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-alias c='cat'
->>>>>>> 00e36321b... zsh: Add a->atom alias:zsh/zshrc
-=======
-=======
->>>>>>> ec8ad16fa... zsh: rm a couple of dud aliases:zsh/zshrc
-alias c='clear'
->>>>>>> 4c9718e1d... zsh: Alias 'c' to 'clear':zsh/zshrc
 alias E='exit'
 alias f='file'
 alias ff='find'
@@ -355,15 +187,6 @@ alias m='make'
 alias M='mkdir'
 alias p='ipython'
 alias q='which'
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-# Since `q` alias conflicts with package of the same name.
-alias sql='/usr/bin/q'
-=======
-alias s='subl'
->>>>>>> 70dd82aa9... zsh: Add 'ra' alias, remove 'R' alias:zsh/zshrc
-=======
->>>>>>> 99ba1d75b... zsh: Command 's' launches subl or rsub:zsh/zshrc
 alias T='tail'
 alias t='timer'
 alias v='vim'
@@ -383,46 +206,14 @@ alias ls_alias="alias | sed 's/=/\t/' | sed -r 's/'"'"(.*)"'"'/\1/' | column -t 
 # Open an emacs terminal to magit in the current directory
 alias magit="emacs -nw --eval '(progn (magit-status) (delete-other-windows))'"
 alias mg=magit
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-=======
 
->>>>>>> 1aad71d2c... Add 'magit' alias:usr/share/Zsh/zshrc
-
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 # Go away "rails generate".
 unalias rg
 
 
-=======
->>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 # --------------------------------------------------------------------------
 # Shell functions.
 # --------------------------------------------------------------------------
-
-
-# Portability wrapper around homebrew. On linux, we install homebrew as a
-# different user, and we must perform any homebrew commands as that user.
-brew() {
-    if [[ -f /usr/local/bin/brew ]]; then
-        /usr/local/bin/brew $@
-    elif [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-        echo "bash -c '/home/linuxbrew/.linuxbrew/bin/brew $@'" | xargs sudo -H -u linuxbrew
-    else
-        echo 'brew not installed!' >&2
-    fi
-}
-
-# Portability wrapper around pip. We use a homebrew installed pip, so must use
-# the same workaround as for the brew() function.
-pip() {
-    if [[ -f /usr/local/bin/brew ]]; then
-        /usr/local/bin/python3 -m pip $@
-    elif [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-        echo "bash -c '/home/linuxbrew/.linuxbrew/bin/python3 -m pip $@'" | xargs sudo -H -u linuxbrew
-    else
-        echo 'brew not installed!' >&2
-    fi
-}
 
 # For performing quick calculations.
 calc() {
@@ -455,7 +246,7 @@ catmd() {
 
 # Recursively change file extensions
 # Extended from: https://github.com/thoughtbot/dotfiles
-change-extension() {
+function change-extension() {
   test -n "$1" || { echo "Usage: change-extension <current-extension> <new-extension>" >&2; return 1; }
 
   setopt nullglob
@@ -529,51 +320,17 @@ for_the_love_of_god() {
     done
 }
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-# A command which is intended to be shoved onto the tail end of some
-# long-running task to email me when done, e.g.
-#     $ ./some_big_task ; here
-alias here='echo here | lmk -'
-
-# Concatenate a list of PDF files.
-#     $ pdf_concat output.pdf in1.pdf in2.pdf ...
-pdf_concat() {
-    local outfile="$1"
-    shift
-    set -x
-    gs -dBATCH -dNOPAUSE -q -SDEVICE=pdfwrite -sOutputFile="$outfile" $@
-    set +x
-}
-
-# Set CUDA_VISIBLE_DEVICES.
-unalias gpu
-gpu() {
-    if [[ "$1" == 0 ]] || [[ "$1" == 1 ]]; then
-        export CUDA_VISIBLE_DEVICES="$1"
-    elif [[ -z "$1" ]]; then
-        export CUDA_VISIBLE_DEVICES=
-    else
-        echo 'Invalid GPU!' >&2
-    fi
-}
-# By default, disable GPU.
-if [[ -d /usr/local/cuda ]]; then
-    export CUDA_VISIBLE_DEVICES=
-fi
-
-=======
->>>>>>> f32f856ae... Add a 'for_the_love_of_god' loop.:usr/share/Zsh/zshrc
 # List file and directory contents.
 unalias l
 l() {
     if [ -z "$1" ]; then
-        ls -lh --color
+        ls -l
     else
         for var in "$@"; do
             if [ -d "$var" ]; then
-                ls -lh --color "$var"
+                ls -l "$var"
             else
-                bat "$var"
+                less "$var"
             fi
         done
     fi
@@ -592,14 +349,7 @@ search() {
 # Launch a webserver in the current dir.
 serve() {
     local port=${1:=3000}
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
     echo "Serving directory contents on http://localhost:$port/"
-=======
->>>>>>> d544c808d... zsh: Update server() to serve():zsh/zshrc
-=======
-    echo "Serving directory contents on http://localhost:$port/"
->>>>>>> 69e9cc5f2... Add a clarifying echo.:usr/share/Zsh/zshrc
     python2 -m SimpleHTTPServer $port
 }
 
@@ -624,10 +374,6 @@ ra() {
     done
 }
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-=======
->>>>>>> 99ba1d75b... zsh: Command 's' launches subl or rsub:zsh/zshrc
 
 # If sublime-text is available locally, command 's' opens sublime.
 # If not, command 's' opens rsub.
@@ -645,11 +391,6 @@ s() {
 }
 
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-=======
->>>>>>> 70dd82aa9... zsh: Add 'ra' alias, remove 'R' alias:zsh/zshrc
-=======
->>>>>>> 99ba1d75b... zsh: Command 's' launches subl or rsub:zsh/zshrc
 # Buffer standard input to a file. Useful for redirecting output of a
 # pipe chain to the same input file. Example:
 #
@@ -718,23 +459,14 @@ fi
 
 # autoenv cd script. https://github.com/kennethreitz/autoenv
 which activate.sh &>/dev/null && source $(which activate.sh)
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-=======
 
 setopt nullglob
->>>>>>> 69beb048b... zsh: Fix autoenv source:zsh/zshrc
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-setopt nullglob
-
-=======
->>>>>>> 87d131acd... Split zshrc into zshenv:usr/share/Zsh/zshrc
 # Custom zsh scripts
 if test -d ~/.zsh; then
     for script in ~/.zsh/*.zsh; do
         test -r "$script" && . "$script"
     done
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 
     for script in ~/.zsh/private/*.zsh; do
         test -r "$script" && . "$script"
@@ -742,16 +474,12 @@ if test -d ~/.zsh; then
     unset script
 fi
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
 unsetopt nullglob
 
 
 # Expand '...' into '../..'
-# TODO(2019-06-05): Temporarily disabling this feature because it has the
-# annoying habit of breaking my bazel '/...' paths.
-# autoload -Uz manydots-magic
-# manydots-magic
+autoload -Uz manydots-magic
+manydots-magic
 
 
 # --------------------------------------------------------------------------
@@ -792,7 +520,6 @@ pkg_config_path_dirs=( \
 export PKG_CONFIG_PATH=$(build_path "${pkg_config_path_dirs[@]}")
 
 ld_library_path_dirs=( \
-    /usr/local/opt/openssl/lib \
     /usr/lib \
     /usr/lib32 \
     /usr/local/lib \
@@ -801,7 +528,6 @@ ld_library_path_dirs=( \
 export LD_LIBRARY_PATH=$(build_path "${ld_library_path_dirs[@]}")
 
 path_dirs=( \
-    /usr/local/opt/openssl/bin \
     ~/bin \
     ~/.rbenv/shims \
     ~/.local/bin \
@@ -812,14 +538,11 @@ path_dirs=( \
     /home/linuxbrew/.linuxbrew/sbin \
     /Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin \
     /usr/local/opt/coreutils/libexec/gnubin \
-    /usr/local/opt/findutils/libexec/gnubin \
     /usr/local/opt/gnu-sed/libexec/gnubin \
-    /usr/local/opt/sqlite/bin \
     /usr/local/opt/gnu-tar/libexec/gnubin \
-    /usr/local/opt/mysql@5.7/bin \
-    /usr/local/opt/ofexport/bin \
     /usr/local/opt/python/libexec/bin \
     /usr/local/opt/unzip/bin \
+    /usr/local/opt/ofexport/bin \
     /usr/local/bin \
     /usr/contrib/bin \
     /usr/local/cuda/bin \
@@ -842,18 +565,9 @@ manpath_dirs=( \
     /usr/local/opt/coreutils/libexec/gnuman \
     /usr/local/opt/gnu-sed/libexec/gnuman \
     /usr/local/opt/gnu-tar/libexec/gnuman \
-    /home/linuxbrew/.linuxbrew/share/man \
 )
 export MANPATH=$(build_path "${manpath_dirs[@]}")
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-infopath_dirs=( \
-    /home/linuxbrew/.linuxbrew/share/info \
-)
-export INFOPATH=$(build_path "${infopath_dirs[@]}")
-
-=======
->>>>>>> 522378133... Fix ZSH coloring.:usr/share/Zsh/zshrc
 
 # Enable pretty colors.
 # This must be done after setting PATH so that on macOS the gnubin directory
@@ -868,26 +582,4 @@ if $(which dircolors &>/dev/null); then
     alias fgrep='fgrep --color=auto'
     alias grep='grep --color=auto'
     alias vdir='vdir --color=auto'
-<<<<<<< HEAD:system/dotfiles/usr/share/Zsh/zshrc
-=======
-
-    for script in ~/.zsh/private/*.zsh; do
-        test -r "$script" && . "$script"
-    done
-    unset script
->>>>>>> 3dc54d6e6... zsh: use a private/ directory:zsh/zshrc
 fi
-
-# Add Travis CI completion, if available.
-[ -f /home/cec/.travis/travis.sh ] && source /home/cec/.travis/travis.sh
-# Add autojump, if available. <https://github.com/wting/autojump>
-[ -f /usr/local/etc/profile.d/autojump.sh ] && . /usr/local/etc/profile.d/autojump.sh
-=======
-unsetopt nullglob
->>>>>>> 69beb048b... zsh: Fix autoenv source:zsh/zshrc
-=======
-unsetopt nullglob
->>>>>>> f7900dd25... Use sublime for EDITOR:zsh/zshrc
-=======
-fi
->>>>>>> 522378133... Fix ZSH coloring.:usr/share/Zsh/zshrc

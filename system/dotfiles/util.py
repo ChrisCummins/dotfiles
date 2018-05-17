@@ -65,12 +65,8 @@ def shell(*args):
   """ run a shell command and return its output. Raises CalledProcessError
       if fails """
   _log_shell(*args)
-  p = subprocess.Popen(
-      *args,
-      shell=True,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-      universal_newlines=True)
+  p = subprocess.Popen(*args, shell=True, stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT, universal_newlines=True)
   stdout, _ = p.communicate()
 
   stdout = stdout.rstrip()
@@ -86,17 +82,18 @@ Command '{cmd}' failed with returncode {p.returncode} and output:
     return stdout
 
 
-def shell_ok(cmd):
+def shell_ok(*args):
   """ run a shell command and return False if error """
-  _log_shell(cmd)
+  _log_shell(*args)
   try:
-    subprocess.check_call(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.check_call(*args, shell=True, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
     _log_shell_output("-> 0")
     return True
   except subprocess.CalledProcessError as e:
     _log_shell_output("-> " + str(e.returncode))
     return False
+
 
 
 # Run the configure script and read the resulting config.json file.
@@ -223,13 +220,11 @@ class Task(object):
     if hasattr(task, "__versions__"):
       _versions = merge_dicts(_versions, getattr(task, "__versions__"))
     if hasattr(task, "__" + get_platform() + "_version__"):
-      _versions = merge_dicts(
-          _versions, getattr(task, "__" + get_platform() + "_version__"))
+      _versions = merge_dicts(_versions, getattr(task, "__" + get_platform() + "_version__"))
     return versions
 
 
-class InvalidTaskError(Exception):
-  pass
+class InvalidTaskError(Exception): pass
 
 
 class Colors:
@@ -342,14 +337,7 @@ def copy_file(src, dst):
     shutil.copyfile(src, dst)
 
 
-<<<<<<< HEAD:system/dotfiles/util.py
-def clone_git_repo(url,
-                   destination,
-                   version=None,
-                   shallow=False,
-=======
 def clone_git_repo(url, destination, version=None, shallow=False,
->>>>>>> 457b24180... Add shallow and recursive options to git clone.:util.py
                    recursive=True):
   """ clone a git repo, returns True if cloned """
   # Cannot set the version of a shallow clone.
@@ -443,9 +431,7 @@ def get_task_method(task, method_name):
   if fn is None:
     fn = getattr(task, method_name, None)
   if fn is None:
-    raise InvalidTaskError(
-        "failed to resolve {method_name} method of Task {task}".format(
-            **vars()))
+    raise InvalidTaskError("failed to resolve {method_name} method of Task {task}".format(**vars()))
   return fn
 
 

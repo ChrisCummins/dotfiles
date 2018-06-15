@@ -89,8 +89,5 @@ set hlsearch
 " iPad keybaord has no escape key
 imap § <Esc>
 
-<<<<<<< HEAD:system/dotfiles/usr/share/Vim/vimrc
 " Show an 80 char limit.
 set colorcolumn=81
-=======
->>>>>>> d7e3ab219... vim: Map § to <Esc>:vim/vimrc

@@ -1,13 +1,4 @@
-<<<<<<< HEAD:system/dotfiles/usr/share/LaTeX/cleanbib
 #!/usr/bin/env python
-=======
-#!/usr/bin/env python3
-# coding: utf-8
-
-from os.path import basename, expanduser
-from sys import argv, exit, stderr
-
->>>>>>> 8804cbe57... Automated code format.:tools/cleanbib.py
 #
 # Script to remove unwanted keys from bibtex files exported by Mendeley.
 #
@@ -21,14 +12,12 @@ from sys import argv, exit, stderr
 #
 # Usage: cleanbib <input-bib>
 #
+from os.path import basename, expanduser
+from sys import argv, exit, stderr
+
 import bibtexparser
 from bibtexparser.bparser import BibTexParser
-<<<<<<< HEAD:system/dotfiles/usr/share/LaTeX/cleanbib
-from os.path import expanduser, basename
-from sys import argv, exit, stderr
-=======
 
->>>>>>> 8804cbe57... Automated code format.:tools/cleanbib.py
 
 class EmptyBibtexError(Exception): pass
 

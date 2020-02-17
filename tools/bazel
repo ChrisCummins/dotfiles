@@ -64,6 +64,7 @@ fi
 # 600s. See: https://github.com/bazelbuild/rules_docker
 set +u
 env -i \
+  HOME="$HOME" \
   TERM="$TERM" \
   PATH="$(build_path ${path_dirs[@]})" \
   CC=$CC \

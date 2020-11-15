@@ -714,5 +714,5 @@ unset __conda_setup
 ### === End profiled region ===
 # Uncomment the following two lines (and the one line at the start of this
 # file) to print profiling info on shell init:
-zprof
-zmodload -u zsh/zprof
+# zprof
+# zmodload -u zsh/zprof

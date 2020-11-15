@@ -13,25 +13,27 @@
 ########################################################################
 #
 
-
-# Portability wrapper for Mac OS X:
-#
-#    Use the local machine name, not the reverse-DNS version returned
-#      by `hostname'.
-#    Pass the correct flags to `sed'.
-#
-if [[ "$(uname -s)" == "Darwin" ]]; then
-    __CEC_ZSH_THEME_HOST=$(scutil --get ComputerName)
-else
-    __CEC_ZSH_THEME_HOST=$HOST
-fi
+# Print a newline between every command.
+# To disable, comment out this line.
+precmd() { print "" }
 
 
-# Get the current working directory, using UNIX style tilde notation
-# in place of full paths for home directories. E.g. "~/", "~foo/".
+# Function to format the path of the current working directory.
 #
 __cec_zsh_theme_cwd() {
-    echo "$(tput bold)$(tput setaf 1)${PWD/$HOME/~}$(tput sgr0)"
+    # Two options here, uncomment the one you want to use:
+    # -----------------
+    # (1) Use `scp`-style paths where $HOME is assumed, so that "src" means 
+    #     "~/src", and paths outside of $HOME are as-written.
+    #
+    pwd=${PWD/$HOME\//}
+    pwd=${pwd/$HOME/}
+    # -----------------
+    # (2) Or always use the full path, but rewrite s/$HOME/~/:
+    #
+    # pwd=${PWD/$HOME/~}
+    # -----------------
+    echo "$(tput bold)$(tput setaf 1)${pwd}$(tput sgr0)"
 }
 
 # Get the prompt prefix, e.g. "$", "#", "(dev) *$", etc.
@@ -93,7 +95,7 @@ __cec_zsh_theme_colourise() {
 
 
 __cec_zsh_theme_exit_status='\
-%(?..%{$fg_bold[red]%}% Exited with return code $? ↵%{$reset_color%}
+%(?..%{$fg_bold[red]%}% Previous command exited with return code $? %{$reset_color%}
 )'
 
 
@@ -105,8 +107,8 @@ __cec_zsh_theme_exit_status='\
 PROMPT="$__cec_zsh_theme_exit_status"'\
 $(tput bold)$(__cec_zsh_theme_colourise $USER)\
 @\
-$(tput bold)$(__cec_zsh_theme_colourise $__CEC_ZSH_THEME_HOST) \
-in $(__cec_zsh_theme_cwd)\
+$(tput bold)$(__cec_zsh_theme_colourise $HOST)\
+:$(__cec_zsh_theme_cwd)\
 $(git_prompt_info) \
 at $(date "+%H:%M:%S").\
 

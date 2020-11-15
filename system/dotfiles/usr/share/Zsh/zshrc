@@ -219,8 +219,9 @@ alias pingg='ping -c 3 www.google.com'
 alias ls_alias="alias | sed 's/=/\t/' | sed -r 's/'"'"(.*)"'"'/\1/' | column -t -s$'\t'"
 
 # Open an emacs terminal to magit in the current directory
-alias magit="emacs -nw --eval '(progn (magit-status) (delete-other-windows))'"
+alias magit="~/.oh-my-zsh/plugins/emacs/emacsclient.sh -nw --eval '(progn (magit-status) (delete-other-windows))'"
 alias mg=magit
+alias e="~/.oh-my-zsh/plugins/emacs/emacsclient.sh -n"
 
 
 # --------------------------------------------------------------------------

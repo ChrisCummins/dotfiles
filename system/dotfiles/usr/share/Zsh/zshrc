@@ -557,6 +557,7 @@ path_dirs=( \
     ~/.gem/*/ruby/*/bin \
     ~/.local/opt/go/bin \
     ~/go/bin \
+    /usr/local/opt/ruby/bin \
     /usr/local/Homebrew/bin \
     /Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin \
     /usr/contrib/bin \

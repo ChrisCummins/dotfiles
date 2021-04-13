@@ -70,6 +70,90 @@ setopt NO_CORRECT           # Disable command spell check
 setopt NO_FLOW_CONTROL      # If I could disable Ctrl-s completely I would!
 unsetopt histverify         # Don't reload history lines
 
+
+# --------------------------------------------------------------------------
+# Paths.
+# --------------------------------------------------------------------------
+
+# Accepts an array of directories and returns a colon separated path
+# of all of the directories that exist, in order.  Example usage:
+#
+#    dirs=("/usr/local/bin" /usr/bin "/not a real path")
+#    unset FOO
+#    FOO=$(build_path "${dirs[@]}")
+#    echo $FOO
+#    # Outputs: /usr/local/bin:/usr/bin
+build_path() {
+    local _dir=""
+    local _path=""
+
+    for _dir in "$@"
+    do
+        if [ -d $_dir ]; then
+            _path=$_path:$_dir
+        fi
+    done
+
+    _path=${_path:1}
+    echo $_path
+}
+
+export NODE_PATH=/usr/local/lib/node_modules
+
+setopt nullglob # Globs which don't match anything expand to nothing.
+
+pkg_config_path_dirs=( \
+    /usr/local/lib/pkgconfig \
+    /usr/lib/pkgconfig \
+)
+export PKG_CONFIG_PATH=$(build_path "${pkg_config_path_dirs[@]}")
+
+ld_library_path_dirs=( \
+    /usr/local/opt/openssl/lib \
+    /usr/lib \
+    /usr/lib32 \
+    /usr/local/lib \
+    /usr/local/cuda/lib64 \
+)
+export LD_LIBRARY_PATH=$(build_path "${ld_library_path_dirs[@]}")
+
+path_dirs=( \
+    ~/.local/opt/programl/bin \
+    ~/.local/bin \
+    /usr/local/opt/openssl/bin \
+    ~/.rbenv/shims \
+    ~/.gem/*/*/bin \
+    ~/.gem/*/ruby/*/bin \
+    ~/.local/opt/go/bin \
+    ~/go/bin \
+    /usr/local/opt/ruby/bin \
+    /Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin \
+    /usr/contrib/bin \
+    /usr/local/bin \
+    /usr/local/cuda/bin \
+    /usr/local/lib/ruby/gems/*/bin \
+    "$BREW_PREFIX"/bin \
+    "$BREW_PREFIX"/opt/*/bin \
+    "$BREW_PREFIX"/opt/*/libexec/gnubin \
+    "$BREW_PREFIX"/opt/*/libexec/bin \
+    /opt/bin \
+    /opt/local/bin \
+    /opt/local/sbin \
+    /bin \
+    /usr/bin \
+    /usr/sbin \
+    /usr/texbin \
+    /sbin \
+)
+export PATH=$(build_path "${path_dirs[@]}")
+
+manpath_dirs=( \
+    /Library/TeX/Distributions/.DefaultTeX/Contents/Man/ \
+    "$BREW_PREFIX"/opt/*/libexec/gnuman \
+)
+export MANPATH=$(build_path "${manpath_dirs[@]}")
+
+
 # --------------------------------------------------------------------------
 # Plugins.
 # --------------------------------------------------------------------------
@@ -507,89 +591,6 @@ else
         xdg-open "$@" &>/dev/null
     }
 fi
-
-# --------------------------------------------------------------------------
-# Paths.
-# --------------------------------------------------------------------------
-
-# Accepts an array of directories and returns a colon separated path
-# of all of the directories that exist, in order.  Example usage:
-#
-#    dirs=("/usr/local/bin" /usr/bin "/not a real path")
-#    unset FOO
-#    FOO=$(build_path "${dirs[@]}")
-#    echo $FOO
-#    # Outputs: /usr/local/bin:/usr/bin
-build_path() {
-    local _dir=""
-    local _path=""
-
-    for _dir in "$@"
-    do
-        if [ -d $_dir ]; then
-            _path=$_path:$_dir
-        fi
-    done
-
-    _path=${_path:1}
-    echo $_path
-}
-
-export NODE_PATH=/usr/local/lib/node_modules
-
-setopt nullglob # Globs which don't match anything expand to nothing.
-
-pkg_config_path_dirs=( \
-    /usr/local/lib/pkgconfig \
-    /usr/lib/pkgconfig \
-)
-export PKG_CONFIG_PATH=$(build_path "${pkg_config_path_dirs[@]}")
-
-ld_library_path_dirs=( \
-    /usr/local/opt/openssl/lib \
-    /usr/lib \
-    /usr/lib32 \
-    /usr/local/lib \
-    /usr/local/cuda/lib64 \
-)
-export LD_LIBRARY_PATH=$(build_path "${ld_library_path_dirs[@]}")
-
-path_dirs=( \
-    ~/.local/opt/programl/bin \
-    ~/.local/bin \
-    /usr/local/opt/openssl/bin \
-    ~/.rbenv/shims \
-    ~/.gem/*/*/bin \
-    ~/.gem/*/ruby/*/bin \
-    ~/.local/opt/go/bin \
-    ~/go/bin \
-    /usr/local/opt/ruby/bin \
-    /Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin \
-    /usr/contrib/bin \
-    /usr/local/bin \
-    /usr/local/cuda/bin \
-    /usr/local/lib/ruby/gems/*/bin \
-    "$BREW_PREFIX"/bin \
-    "$BREW_PREFIX"/opt/*/bin \
-    "$BREW_PREFIX"/opt/*/libexec/gnubin \
-    "$BREW_PREFIX"/opt/*/libexec/bin \
-    /opt/bin \
-    /opt/local/bin \
-    /opt/local/sbin \
-    /bin \
-    /usr/bin \
-    /usr/sbin \
-    /usr/texbin \
-    /sbin \
-)
-export PATH=$(build_path "${path_dirs[@]}")
-
-manpath_dirs=( \
-    /Library/TeX/Distributions/.DefaultTeX/Contents/Man/ \
-    "$BREW_PREFIX"/opt/*/libexec/gnuman \
-)
-export MANPATH=$(build_path "${manpath_dirs[@]}")
-
 
 # Enable pretty colors.
 # This must be done after setting PATH so that on macOS the gnubin directory

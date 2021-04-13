@@ -5,6 +5,7 @@
 
 # No arguments: `git status`. With arguments: acts like `git`
 # Extended from: https://github.com/thoughtbot/dotfiles
+unalias g 2>/dev/null
 g() {
     if [ -n "$1" ]; then
         git "$@"

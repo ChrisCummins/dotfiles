@@ -7,6 +7,7 @@ alias ib='ibazel'
 alias ibb='ibazel build'
 alias ibr='ibazel run'
 alias ibt='ibazel test'
+alias ibtt='ibazel test --test_output=streamed --test_arg=-x'
 
 # Enable tab-completion.
 # https://docs.bazel.build/versions/master/completion.html#zsh

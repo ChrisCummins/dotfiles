@@ -606,8 +606,6 @@ if $(which dircolors &>/dev/null); then
     alias vdir='vdir --color=auto'
 fi
 
-# Add Travis CI completion, if available.
-[ -f /home/cec/.travis/travis.sh ] && source /home/cec/.travis/travis.sh
 # Add autojump, if available. <https://github.com/wting/autojump>
 [ -f /usr/local/etc/profile.d/autojump.sh ] && . /usr/local/etc/profile.d/autojump.sh
 

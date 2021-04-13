@@ -5,6 +5,13 @@
 # zmodload zsh/zprof
 ### === Start profiled region ===
 
+# Define $BREW_PREFIX to support variable homebrew prefixes. If Honmebrew is
+# not found, $BREW_PREFIX is an empty string, so can be safely used as a path
+# prefix on linux systems.
+export BREW_PREFIX=""
+[ -f /usr/local/Homebrew/bin/brew ] && export BREW_PREFIX=/usr/local/Homebrew
+[ -f /usr/local/bin/brew ] && export BREW_PREFIX=/usr/local
+
 # Set the name of the theme to load.
 export ZSH_THEME="cec"
 

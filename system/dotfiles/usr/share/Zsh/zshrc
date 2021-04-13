@@ -174,7 +174,6 @@ plugins=(
     history   # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins#history
     pyenv     # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins#pyenv
     python    # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins#python
-    sudo      # Press esc twice to insert sudo
     tmux      # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins#tmux
     z         # https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/z
     zsh-syntax-highlighting

@@ -220,7 +220,6 @@ alias ls_alias="alias | sed 's/=/\t/' | sed -r 's/'"'"(.*)"'"'/\1/' | column -t 
 
 # Open an emacs terminal to magit in the current directory
 alias magit="~/.oh-my-zsh/plugins/emacs/emacsclient.sh -nw --eval '(progn (magit-status) (delete-other-windows))'"
-alias mg=magit
 alias e="~/.oh-my-zsh/plugins/emacs/emacsclient.sh -n"
 
 
@@ -693,6 +692,21 @@ export LESSOPEN="| /usr/bin/highlight %s --out-format xterm256 --force"
 
 # Use colors for less, man, etc.
 [[ -f ~/.config/less/termcap ]] && . ~/.config/less/termcap
+
+# Added by termtile (https://github.com/apaszke/termtile)
+alias ul='osascript ~/.termtile/tile.scpt up left'
+alias ur='osascript ~/.termtile/tile.scpt up right'
+alias dl='osascript ~/.termtile/tile.scpt down left'
+alias dr='osascript ~/.termtile/tile.scpt down right'
+alias fl='osascript ~/.termtile/tile.scpt left'
+alias fr='osascript ~/.termtile/tile.scpt right'
+alias up='osascript ~/.termtile/tile.scpt up'
+alias down='osascript ~/.termtile/tile.scpt down'
+alias big='osascript ~/.termtile/resize.scpt '
+alias cen='osascript ~/.termtile/center.scpt '
+alias max='osascript ~/.termtile/maximize.scpt '
+alias sn='osascript ~/.termtile/changeScreen.scpt next'
+alias fs='osascript ~/.termtile/fullscreen.scpt '
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!

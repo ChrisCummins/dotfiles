@@ -430,7 +430,7 @@ ra() {
 # If not, command 's' opens rsub.
 #
 s() {
-    if [[ -f /bin/subl ]] || [[ -f /usr/local/bin/subl ]] || [[ -f /usr/local/Homebrew/bin/subl ]]; then
+    if [[ -f "$BREW_PREFIX"/bin/subl ]]; then
         # open locally
         subl $@
     else
@@ -564,35 +564,20 @@ path_dirs=( \
     ~/.local/opt/go/bin \
     ~/go/bin \
     /usr/local/opt/ruby/bin \
-    /usr/local/Homebrew/bin \
     /Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin \
     /usr/contrib/bin \
     /usr/local/bin \
     /usr/local/cuda/bin \
     /usr/local/lib/ruby/gems/*/bin \
-    /usr/local/opt/coreutils/libexec/gnubin \
-    /usr/local/opt/curl/bin \
-    /usr/local/opt/findutils/libexec/gnubin \
-    /usr/local/opt/gnu-sed/libexec/gnubin \
-    /usr/local/opt/gnu-which/libexec/gnubin \
-    /usr/local/opt/gnu-time/libexec/gnubin \
-    /usr/local/opt/gnu-indent/libexec/gnubin \
-    /usr/local/opt/gnu-tar/libexec/gnubin \
-    /usr/local/opt/llvm/bin \
-    /usr/local/opt/mysql@5.7/bin \
-    /usr/local/opt/ofexport/bin \
-    /usr/local/opt/python/libexec/bin \
-    /usr/local/opt/sqlite/bin \
-    /usr/local/opt/unzip/bin \
+    "$BREW_PREFIX"/bin \
+    "$BREW_PREFIX"/opt/*/bin \
+    "$BREW_PREFIX"/opt/*/libexec/gnubin \
+    "$BREW_PREFIX"/opt/*/libexec/bin \
     /opt/bin \
     /opt/local/bin \
     /opt/local/sbin \
-    /opt/swift/bin \
     /bin \
     /usr/bin \
-    /usr/bin/core_perl \
-    /usr/bin/vendor_perl \
-    /usr/local/mysql/bin \
     /usr/sbin \
     /usr/texbin \
     /sbin \
@@ -601,9 +586,7 @@ export PATH=$(build_path "${path_dirs[@]}")
 
 manpath_dirs=( \
     /Library/TeX/Distributions/.DefaultTeX/Contents/Man/ \
-    /usr/local/opt/coreutils/libexec/gnuman \
-    /usr/local/opt/gnu-sed/libexec/gnuman \
-    /usr/local/opt/gnu-tar/libexec/gnuman \
+    "$BREW_PREFIX"/opt/*/libexec/gnuman \
 )
 export MANPATH=$(build_path "${manpath_dirs[@]}")
 

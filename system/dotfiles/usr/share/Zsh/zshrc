@@ -674,6 +674,33 @@ fi
 
 [[ -s "/etc/grc.zshrc" ]] && source /etc/grc.zshrc
 
+# --------------------------------------------------------------------------
+# Shell environment.
+# --------------------------------------------------------------------------
+
+# Development environment.
+export USE_CCACHE=1
+
+# Don't modify prompt when activating Python virtualenv environments.
+# This is because our zsh prompt includes this information.
+#
+# See: https://virtualenv.pypa.io/en/stable/reference/#envvar-VIRTUAL_ENV_DISABLE_PROMPT
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+# Pagers and editors.
+export PAGER="less"
+export LESS="--ignore-case --LONG-PROMPT --QUIET --chop-long-lines -Sm \
+             --RAW-CONTROL-CHARS --quit-if-one-screen --no-init"
+if [[ -x $(which lesspipe.sh) ]]; then
+    export LESSOPEN="| lesspipe.sh %s"
+fi
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+export EDITOR="$HOME/.oh-my-zsh/plugins/emacs/emacsclient.sh"
+export ALTERNATE_EDITOR=''
+export USE_EDITOR=$EDITOR
+export VISUAL=$EDITOR
+
 # Get color support for 'less'
 export LESS="--RAW-CONTROL-CHARS"
 export LESSOPEN="| /usr/bin/highlight %s --out-format xterm256 --force"
@@ -695,6 +722,11 @@ alias cen='osascript ~/.termtile/center.scpt '
 alias max='osascript ~/.termtile/maximize.scpt '
 alias sn='osascript ~/.termtile/changeScreen.scpt next'
 alias fs='osascript ~/.termtile/fullscreen.scpt '
+
+# rbenv shims. https://github.com/sstephenson/rbenv#how-it-works
+if [[ -x $(which rbenv) ]]; then
+    eval "$(rbenv init -)"
+fi
 
 
 ### === End profiled region ===

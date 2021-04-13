@@ -23,11 +23,11 @@ precmd() { print "" }
 __cec_zsh_theme_cwd() {
     # Two options here, uncomment the one you want to use:
     # -----------------
-    # (1) Use `scp`-style paths where $HOME is assumed, so that "src" means 
+    # (1) Use `scp`-style paths where $HOME is assumed, so that "src" means
     #     "~/src", and paths outside of $HOME are as-written.
     #
-    pwd=${PWD/$HOME\//}
-    pwd=${pwd/$HOME/}
+    pwd=${PWD/#$HOME\//}
+    pwd=${pwd/#$HOME/}
     # -----------------
     # (2) Or always use the full path, but rewrite s/$HOME/~/:
     #

@@ -38,9 +38,6 @@ export ALTERNATE_EDITOR=''
 export USE_EDITOR=$EDITOR
 export VISUAL=$EDITOR
 
-# OpenCL vendor installation.
-[ -d /etc/OpenCL/vendors/ ] && export OPENCL_VENDOR_PATH=/etc/OpenCL/vendors/
-
 
 # --------------------------------------------------------------------------
 # External files.

@@ -715,24 +715,6 @@ alias max='osascript ~/.termtile/maximize.scpt '
 alias sn='osascript ~/.termtile/changeScreen.scpt next'
 alias fs='osascript ~/.termtile/fullscreen.scpt '
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/cec/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/cec/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/cec/anaconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/cec/anaconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
-# Uncomment the following line to use the starship prompt.
-# eval "$(starship init zsh)"
-
 
 ### === End profiled region ===
 # Uncomment the following two lines (and the one line at the start of this

@@ -695,6 +695,8 @@ fpath[1,0]=~/.zsh/
 
 [[ -s "/etc/grc.zshrc" ]] && source /etc/grc.zshrc
 
+# Autoenv binary.
+[ -f ~/.local/bin/activate.sh ] && source ~/.local/bin/activate.sh
 [ -f "$BREW_PREFIX"/opt/autoenv/activate.sh ] && source "$BREW_PREFIX"/opt/autoenv/activate.sh
 
 # compinit optimization for oh-my-zsh

@@ -12,7 +12,7 @@ usage() {
   echo "usage: $0 [--rm]" >&2
 }
 
-DROPBOX_DIR=${DROPBOX_DIR:-"$HOME/Dropbox"}
+DROPBOX_DIR=${DROPBOX_DIR:-"$HOME/Dropbox/"}
 
 set -e
 

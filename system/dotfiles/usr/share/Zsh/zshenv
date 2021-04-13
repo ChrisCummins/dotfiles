@@ -33,7 +33,7 @@ if [[ -x $(which lesspipe.sh) ]]; then
 fi
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
-export EDITOR="emacs -nw"
+export EDITOR="$HOME/.oh-my-zsh/plugins/emacs/emacsclient.sh"
 export ALTERNATE_EDITOR=''
 export USE_EDITOR=$EDITOR
 export VISUAL=$EDITOR

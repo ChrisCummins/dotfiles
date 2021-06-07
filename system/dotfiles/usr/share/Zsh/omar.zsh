@@ -46,7 +46,7 @@ omar_have_my_movies() {
 }
 
 omar_have_my_files() {
-  _wrapped_rsync --delete / omar:Documents/device_backups/bodie/ \
+  _wrapped_rsync --delete / omar:Backups/bodie/Latest/ \
     --exclude "/.file" \
     --exclude "/.PKInstallSandboxManager-SystemSoftware" \
     --exclude "/Applications" \
@@ -115,7 +115,7 @@ omar_have_my_files() {
     $@
 }
 
-arent_you_glad_you_backup() {
+omar_full_backup() {
   omar_have_my_photos
   omar_have_my_music
   omar_have_my_movies

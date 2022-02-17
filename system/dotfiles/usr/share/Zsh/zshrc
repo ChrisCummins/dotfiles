@@ -706,6 +706,7 @@ fpath[1,0]=~/.zsh/
 [ -f ~/.local/bin/activate.sh ] && source ~/.local/bin/activate.sh
 [ -f "$BREW_PREFIX"/opt/autoenv/activate.sh ] && source "$BREW_PREFIX"/opt/autoenv/activate.sh
 [ -f ~/.autoenv/activate.sh ] && source ~/.autoenv/activate.sh
+[ -f ~/miniconda3/bin/activate.sh ] && source ~/miniconda3/bin/activate.sh
 
 # compinit optimization for oh-my-zsh
 # On slow systems, checking the cached .zcompdump file to see if it must be

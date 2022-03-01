@@ -5,8 +5,12 @@ alias omar-off="ssh omar 'sudo shutdown -h now'"
 alias pingo='ping 192.168.0.204'
 
 _wrapped_rsync() {
-  # Rsync with a default list of excludes for common filesystem junk.
-  rsync -avh \
+  # Run rsync as root to prevent local read errors. Then omit permissions
+  # bits as those can fail on the remote, and use a default list of excludes
+  # for common filesystem junk.
+  sudo rsync -avh \
+    --no-perms --omit-dir-times \
+    -e "ssh -i /Users/cec/.ssh/id_rsa -F /Users/cec/.ssh/config" \
     --exclude ._.DS_Store \
     --exclude .com.apple.timemachine.supported \
     --exclude .DS_Store \
@@ -32,6 +36,9 @@ omar_have_my_photos() {
     --exclude '*.lrcat.lock' \
     --exclude '*.lrdata' \
     --exclude '*.lrfprev' \
+    --exclude '*.lrmprev' \
+    --exclude '*.lrprev' \
+    --exclude '* Previews.lrdata' \
     $@
 }
 
@@ -92,14 +99,15 @@ omar_have_my_files() {
     --exclude "/Users/cec/Dropbox/.dropbox.cache" \
     --exclude "/Users/cec/Library/Application Support/Google/Chrome" \
     --exclude "/Users/cec/Library/Application Support/Steam/appcache" \
+    --exclude "/Users/cec/Library/Application Support/Steam/steamapps" \
     --exclude "/Users/cec/Library/Caches" \
     --exclude "/Users/cec/Library/Containers/com.apple.geod/Data/Library/Caches" \
     --exclude "/Users/cec/Library/Safari" \
     --exclude "/Users/cec/Library/Suggestions" \
     --exclude "/Users/cec/Library/VoiceTrigger/SAT" \
+    --exclude "/Users/cec/Movies" \
     --exclude "/Users/cec/Music" \
     --exclude "/Users/cec/Pictures" \
-    --exclude "/Users/cec/Movies" \
     --exclude "/Users/cec/tmp" \
     --exclude "/Users/Guest" \
     --exclude "/usr/bin/sudo" \
@@ -120,4 +128,8 @@ omar_full_backup() {
   omar_have_my_music
   omar_have_my_movies
   omar_have_my_files
+}
+
+backup() {
+  omar_full_backup
 }

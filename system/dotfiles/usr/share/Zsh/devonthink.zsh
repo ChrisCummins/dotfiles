@@ -4,7 +4,7 @@ devonthink-open-databases() {
   local database_dir=~/Applications/DEVONthink
 
   for f in $(ls "$database_dir"); do
-    echo $f
-    open $f
+    echo "$database_dir/$f"
+    open "$database_dir/$f"
   done
 }

@@ -33,7 +33,7 @@ __cec_zsh_theme_cwd() {
     #
     # pwd=${PWD/$HOME/~}
     # -----------------
-    echo "$(tput bold)$(tput setaf 1)${pwd}$(tput sgr0)"
+    echo "\033[1m\e[31m${pwd}\033[0m"
 }
 
 # Get the prompt prefix, e.g. "$", "#", "(dev) *$", etc.
@@ -71,12 +71,15 @@ __cec_zsh_theme_prefix() {
     echo "$prefix"
 }
 
-# Print a given string in a colour depending on the contents of the
-# string.
-#
+
+__cec_zsh_theme_exit_status='\
+%(?..%{$fg_bold[red]%}% Previous command exited with return code $? %{$reset_color%}
+)'
+
 __cec_zsh_theme_colourise() {
     local string="$1"
-    local total=2
+
+	local total=2
     local i
 
     # Sum the ASCII values of the characters in the string
@@ -84,20 +87,11 @@ __cec_zsh_theme_colourise() {
         total=$((total+$(printf '%d' \'${string:$i:1})))
     done
 
-    # Convert integer into a colour code in the range [1,7]
-    local modcode=$((1 + $(expr $total % 7)))
+    # Convert integer into a colour code in the range [31,37]
+    local modcode=$((31 + $(expr $total % 7)))
 
-    # Set colour code
-    local color=$(tput setaf $modcode)
-
-    echo "$color$1$reset_color"
+	echo "\033[1m\e[${modcode}m${string}\033[0m"
 }
-
-
-__cec_zsh_theme_exit_status='\
-%(?..%{$fg_bold[red]%}% Previous command exited with return code $? %{$reset_color%}
-)'
-
 
 # Left hand side prompt.
 #
@@ -105,9 +99,9 @@ __cec_zsh_theme_exit_status='\
 # username and hostname, current directory, and git version control
 # status.
 PROMPT="$__cec_zsh_theme_exit_status"'\
-$(tput bold)$(__cec_zsh_theme_colourise $USER)\
+$(__cec_zsh_theme_colourise $USER)\
 @\
-$(tput bold)$(__cec_zsh_theme_colourise $HOST)\
+$(__cec_zsh_theme_colourise $HOST)\
 :$(__cec_zsh_theme_cwd)\
 $(git_prompt_info) \
 at $(date "+%H:%M:%S").\

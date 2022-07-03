@@ -41,3 +41,28 @@ lensbaby_composer_edge_50_set_exif() {
       -FNumber="3.2" \
       $@
 }
+
+orange_you_glad_you_backup() {
+  rsync -avh --no-perms --omit-dir-times \
+    ~/Pictures/ /Volumes/Satsuma/ \
+    --exclude ._.DS_Store \
+    --exclude .com.apple.timemachine.supported \
+    --exclude .DS_Store \
+    --exclude .sync.ffs_db \
+    --exclude /.DocumentRevisions-V100 \
+    --exclude /.fseventsd \
+    --exclude /.Spotlight-V100 \
+    --exclude /.TemporaryItems \
+    --exclude /.Trashes \
+    --exclude /.VolumeIcon.icns \
+    --exclude /.VolumeIcon.ico \
+    --exclude /autorun.inf \
+    --exclude '*.lrcat-journal' \
+    --exclude '*.lrcat.lock' \
+    --exclude '*.lrdata' \
+    --exclude '*.lrfprev' \
+    --exclude '*.lrmprev' \
+    --exclude '*.lrprev' \
+    --exclude '* Previews.lrdata' \
+    --delete
+}

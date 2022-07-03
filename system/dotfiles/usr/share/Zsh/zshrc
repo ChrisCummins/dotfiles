@@ -667,9 +667,9 @@ plugins=(
     python    # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins#python
     tmux      # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins#tmux
     z         # https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/z
-    zsh-syntax-highlighting
 )
 
+source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # --------------------------------------------------------------------------
 # External files.
